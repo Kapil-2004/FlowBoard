@@ -1,0 +1,60 @@
+# FlowBoard – Full Stack Orchestration
+# Run with: docker-compose up --build
+
+services:
+
+  # --- Database ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowboard_db
+    environment:
+      POSTGRES_DB: flowboard_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Backend (Auth Service) ---
+  auth-service:
+    build:
+      context: ./Backend/FlowBoard-Auth
+      dockerfile: Dockerfile
+    container_name: flowboard_backend
+    ports:
+      - "5001:5001"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5001
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=flowboard_auth;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Jwt__ExpiryHours: "24"
+      Cors__AllowedOrigins: "http://localhost:4200"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- Frontend (Web Client) ---
+  web-client:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: flowboard_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - auth-service
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: flowboard_postgres_data
