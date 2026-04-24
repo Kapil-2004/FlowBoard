@@ -1,0 +1,51 @@
+# .gitignore for FlowBoard (Monorepo)
+
+# --- Dotnet (.NET Core) ---
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.db
+*.db-shm
+*.db-wal
+
+# User-specific files
+.idea/
+.DS_Store
+
+# --- Node / Angular ---
+node_modules/
+.angular/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Environment Secrets ---
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+*.pfx
+*.certificate
+
+# --- Docker ---
+.docker/
+# Don't ignore dockerfiles or compose files
+# !docker-compose.yml
+
+# --- OS specific ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
