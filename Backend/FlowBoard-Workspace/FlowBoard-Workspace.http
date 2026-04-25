@@ -1,0 +1,6 @@
+@FlowBoard_Workspace_HostAddress = http://localhost:5035
+
+GET {{FlowBoard_Workspace_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
