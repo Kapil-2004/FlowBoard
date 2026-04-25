@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
+import { WorkspaceListComponent } from './workspaces/workspace-list/workspace-list.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WorkspaceListComponent],
   template: `
     <div class="dashboard-container">
       <nav class="top-nav">
@@ -31,11 +32,10 @@ import { AuthService } from './services/auth.service';
             <p><strong>Email:</strong> {{ user()?.email }}</p>
             <p><strong>Joined:</strong> {{ user()?.createdAt | date:'mediumDate' }}</p>
           </div>
-          <div class="card placeholder">
-            <h3>Your Tasks</h3>
-            <p>Coming soon...</p>
-          </div>
         </div>
+
+        <!-- Inject Workspace Feature -->
+        <app-workspace-list></app-workspace-list>
       </main>
     </div>
   `,

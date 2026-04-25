@@ -3,7 +3,7 @@
 
 services:
 
-  # --- Database ---
+  # --- Databases ---
   postgres:
     image: postgres:16-alpine
     container_name: flowboard_db
@@ -17,6 +17,23 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres_workspace:
+    image: postgres:16-alpine
+    container_name: flowboard_workspace_db
+    environment:
+      POSTGRES_DB: flowboard_workspace_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_workspace_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_workspace_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -43,6 +60,27 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Backend (Workspace Service) ---
+  workspace-service:
+    build:
+      context: ./Backend/FlowBoard-Workspace
+      dockerfile: Dockerfile
+    container_name: flowboard_workspace_service
+    ports:
+      - "5002:5002"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5002
+      ConnectionStrings__DefaultConnection: "Host=postgres_workspace;Port=5432;Database=flowboard_workspace_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Cors__AllowedOrigins: "http://localhost:4200"
+    depends_on:
+      postgres_workspace:
+        condition: service_healthy
+    restart: unless-stopped
+
   # --- Frontend (Web Client) ---
   web-client:
     build:
@@ -53,8 +91,11 @@ services:
       - "4200:80"
     depends_on:
       - auth-service
+      - workspace-service
     restart: unless-stopped
 
 volumes:
   postgres_data:
     name: flowboard_postgres_data
+  postgres_workspace_data:
+    name: flowboard_postgres_workspace_data

@@ -3,6 +3,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0--beta-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-Angular%20%7C%20.NET%208%20%7C%20Postgres-purple)
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
 
 FlowBoard is a high-performance, aesthetically pleasing Kanban-style task management application built with a modern tech stack. It features a robust .NET 8 microservice architecture for the backend and a sleek, responsive Angular 17+ standalone component architecture for the frontend.
 
@@ -19,7 +20,9 @@ FlowBoard is a high-performance, aesthetically pleasing Kanban-style task manage
   - [Manual Setup (Development)](#manual-setup-development)
 - [API Documentation](#-api-documentation)
 - [Project Structure](#-project-structure)
-- [Use Cases](#-use-cases)
+- [Microservices Overview](#-microservices-overview)
+- [Core Design Principles](#-core-design-principles)
+- [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -27,17 +30,23 @@ FlowBoard is a high-performance, aesthetically pleasing Kanban-style task manage
 
 ## ✨ Features
 
-### Phase 1: Authentication & Identity (Current)
+### Phase 1: Authentication & Identity (Stable)
 - **Secure Registration**: User signup with password hashing and validation.
 - **JWT Authentication**: Token-based security for stateless API interaction.
-- **Modern Dashboard**: Personalized landing page for authenticated users.
-- **Responsive Design**: Fully functional across desktop and mobile devices.
+- **OAuth Integration**: Support for Google and GitHub authentication.
+- **Profile Management**: Update user details and avatars.
 - **Premium Aesthetics**: Monochromatic design system with Plus Jakarta Sans typography.
 
-### Phase 2: Core Task Management (In Progress)
-- **Workspaces**: Group boards by project or team.
+### Phase 2: Workspace & Collaboration (Active)
+- **Workspaces**: Create and manage isolated project environments.
+- **Member Management**: Search and invite users to workspaces via email/name.
+- **Role-Based Access**: ADMIN and MEMBER roles for granular control.
+- **Real-time Notifications**: Custom toast system for instant operation feedback.
+- **Visibility Control**: Toggle between PUBLIC and PRIVATE workspaces.
+
+### Phase 3: Task Management (Upcoming)
 - **Kanban Boards**: Drag-and-drop task management.
-- **Lists & Cards**: Granular task organization.
+- **Lists & Cards**: Granular task organization with labels and deadlines.
 - **Real-time Updates**: Instant synchronization across clients.
 
 ---
@@ -46,33 +55,33 @@ FlowBoard is a high-performance, aesthetically pleasing Kanban-style task manage
 
 ### Frontend
 - **Framework**: Angular 17+ (Standalone Components)
-- **Styling**: Vanilla CSS (Custom Design System)
-- **State Management**: Signals & RXJS
-- **Icons**: Custom SVG & Lucide Icons
+- **State Management**: Signals & RxJS
+- **Styling**: Vanilla CSS with a Custom Design System (CSS Variables)
+- **Icons**: Lucide Icons & Custom SVG
+- **Interceptors**: Automated JWT handling for secure API calls
 
 ### Backend
 - **Framework**: ASP.NET Core 8.0 (Web API)
-- **Database**: PostgreSQL 16
-- **ORM**: Entity Framework Core
-- **Identity**: Custom JWT Implementation
-- **Documentation**: Swagger / OpenAPI
+- **Database**: PostgreSQL 16 (Relational storage)
+- **ORM**: Entity Framework Core (Code First)
+- **Security**: BCrypt hashing & JWT Bearer tokens
+- **Documentation**: Swagger / OpenAPI 3.0
 
-### DevOps & Tools
+### DevOps & Infrastructure
 - **Containerization**: Docker & Docker Compose
-- **Version Control**: Git
-- **Testing**: xUnit & Moq
+- **Orchestration**: Multi-container setup with health checks
+- **Database Migrations**: Automated EF Core migrations on startup
 
 ---
 
 ## 🏗️ Architecture
 
-FlowBoard follows a **Modular Monolith** approach on the backend, ensuring clean separation of concerns while maintaining simplicity for development.
+FlowBoard utilizes a **Microservice Architecture** to ensure scalability and maintainability.
 
-- **Controllers**: Handle HTTP requests and routing.
-- **Services**: Contain core business logic.
-- **Repositories**: Abstract database interactions.
-- **DTOs**: Data Transfer Objects for API contracts.
-- **Middlewares**: Custom JWT and Error handling.
+1.  **Auth Service (Port 5001)**: Handles identity, authentication, and user profiles.
+2.  **Workspace Service (Port 5002)**: Manages workspaces, memberships, and roles.
+3.  **Frontend (Port 4200)**: Angular SPA serving as the primary client interface.
+4.  **Shared Databases**: Independent PostgreSQL instances for each microservice to enforce data isolation.
 
 ---
 
@@ -91,21 +100,26 @@ The entire stack (Backend + Frontend + DB) can be launched with a single command
 docker-compose up --build
 ```
 - **Frontend**: http://localhost:4200
-- **Backend API**: http://localhost:5001
-- **Swagger UI**: http://localhost:5001/swagger
+- **Auth API**: http://localhost:5001
+- **Workspace API**: http://localhost:5002/swagger
 
 ### Manual Setup (Development)
 
-#### 1. Database
-Start a PostgreSQL instance or use the provided docker-compose:
+#### 1. Databases
+Start the PostgreSQL containers for development:
 ```bash
-cd Backend/FlowBoard-Auth
-docker-compose up -d postgres
+docker-compose up -d postgres postgres_workspace
 ```
 
-#### 2. Backend
+#### 2. Backend Services
+Open two terminals:
 ```bash
+# Terminal 1
 cd Backend/FlowBoard-Auth
+dotnet run
+
+# Terminal 2
+cd Backend/FlowBoard-Workspace
 dotnet run
 ```
 
@@ -120,13 +134,20 @@ npm start
 
 ## 📑 API Documentation
 
-Once the backend is running, you can explore the API using Swagger:
-`http://localhost:5001/swagger/index.html`
+Each service provides its own Swagger UI for interactive documentation:
+
+- **Auth Service**: `http://localhost:5001/`
+- **Workspace Service**: `http://localhost:5002/swagger/index.html`
 
 ### Key Endpoints
-- `POST /api/auth/register`: Create a new account.
-- `POST /api/auth/login`: Authenticate and receive a JWT.
-- `GET /api/auth/profile`: Retrieve current user info (Secured).
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Create a new user account |
+| `POST` | `/api/auth/login` | Authenticate and receive JWT |
+| `GET` | `/api/auth/users/search` | Search for users by name/email |
+| `POST` | `/api/workspaces` | Create a new workspace |
+| `GET` | `/api/workspaces/member` | Get all workspaces for the current user |
+| `POST` | `/api/workspaces/{id}/members` | Add a member to a workspace |
 
 ---
 
@@ -135,31 +156,78 @@ Once the backend is running, you can explore the API using Swagger:
 ```text
 FlowBoard/
 ├── Backend/
-│   ├── FlowBoard-Auth/       # .NET 8 Auth Microservice
-│   │   ├── Controllers/      # API Endpoints
-│   │   ├── Models/           # DB Entities
-│   │   ├── Services/         # Business Logic
-│   │   └── Data/             # EF Core Context
-│   └── test/                 # xUnit Tests
+│   ├── FlowBoard-Auth/         # .NET 8 Identity Microservice
+│   │   ├── Controllers/        # Auth & Profile Endpoints
+│   │   ├── Services/           # Business Logic (BCrypt, JWT)
+│   │   └── Data/               # AuthDbContext (Postgres)
+│   ├── FlowBoard-Workspace/    # .NET 8 Workspace Microservice
+│   │   ├── Controllers/        # Workspace & Member Endpoints
+│   │   ├── Services/           # Logic for roles & memberships
+│   │   └── Data/               # WorkspaceDbContext (Postgres)
+│   └── test/                   # Comprehensive xUnit Tests
 ├── Frontend/
 │   ├── src/
-│   │   ├── app/              # Angular Components
-│   │   │   ├── auth/         # Login/Signup
-│   │   │   ├── services/     # API Clients
-│   │   │   └── dashboard/    # User Dashboard
-│   │   └── assets/           # Global styles & images
-├── docker-compose.yml        # Root orchestration
-└── README.md                 # You are here
+│   │   ├── app/                # Angular Components & Services
+│   │   │   ├── auth/           # Login/Signup/OAuth logic
+│   │   │   ├── workspaces/     # Workspace management UI
+│   │   │   ├── services/       # API Clients (Angular Signals)
+│   │   │   └── models/         # TypeScript Interfaces/DTOs
+│   │   └── assets/             # Global tokens & design system
+├── docker-compose.yml          # Root orchestration for the entire stack
+└── README.md                   # Project documentation
 ```
 
 ---
 
-## 📋 Use Cases
+## 💎 Core Design Principles
 
-1. **UC01: User Registration** - New users can create accounts with email verification logic.
-2. **UC02: Secure Login** - Multi-factor ready JWT authentication.
-3. **UC03: Dashboard Overview** - User-specific data visualization.
-4. **UC04: Workspace Creation** - Organizing boards into logical groups.
+1.  **System Aesthetics**: We follow a "Modern System" design language—monochromatic, high contrast, and refined typography (Plus Jakarta Sans).
+2.  **Stateless Identity**: Authentication is handled entirely via JWT, enabling seamless horizontal scaling of microservices.
+3.  **Data Isolation**: Every microservice owns its data. No cross-service database queries are allowed; communication happens via APIs.
+4.  **Reactive UI**: The frontend leverages Angular Signals for highly performant, reactive state updates.
+
+---
+
+## 🛠️ Technical Deep Dive
+
+### JWT Authentication Flow
+1.  **Identity Handshake**: User provides credentials to the Auth Service.
+2.  **Token Issuance**: Auth Service validates and signs a JWT with user claims (Sub, Email, Name).
+3.  **Client Persistence**: The Frontend stores the token in `localStorage`.
+4.  **Automatic Header Injection**: An Angular `HttpInterceptor` automatically attaches the token as a `Bearer` header to all outgoing requests.
+5.  **Cross-Service Validation**: Microservices (like Workspace) validate the token using a shared secret key to ensure the request is authorized without calling the Auth Service.
+
+### Database Strategy
+We use **PostgreSQL** with Entity Framework Core's **Code-First** approach.
+-   **Migrations**: All database changes are tracked in migration files.
+-   **Auto-Apply**: On startup, services check for pending migrations and apply them automatically, ensuring the environment is always up-to-date.
+-   **Isolation**: Each service has its own schema and credentials to prevent data leakage.
+
+---
+
+## 🔧 Troubleshooting
+
+### Docker Issues
+-   **Containers not starting**: Check if the ports (5001, 5002, 4200, 5432, 5433) are already in use by other applications.
+-   **Database Connection Failed**: Ensure the `postgres` and `postgres_workspace` containers are in a "Healthy" state before the backend starts.
+-   **CORS Errors**: The backend is configured to allow `http://localhost:4200`. If you run the frontend on a different port, update `Cors:AllowedOrigins` in the `appsettings.json`.
+
+### Frontend Issues
+-   **npm install failures**: Ensure you are using Node.js v18 or later.
+-   **API 404 Errors**: Double-check the `API_BASE` URLs in the frontend services to ensure they match your local or Docker environment.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] UC1: User Authentication (JWT)
+- [x] UC2: User Profile Management
+- [x] UC4: Workspace Creation & Management
+- [x] UC5: Workspace Member Invitation
+- [ ] UC6: Real-time Kanban Boards
+- [ ] UC10: Task Lists & Card CRUD
+- [ ] UC15: Activity Logging & Audit Trails
+- [ ] UC24: Dark/Light Mode Dynamic Switching
 
 ---
 
@@ -179,4 +247,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-*Developed with ❤️ by the FlowBoard Team.*
+*Developed with ❤️ by the FlowBoard Team. Built for performance, designed for speed.*
