@@ -38,9 +38,9 @@ import { NotificationService } from './services/notification.service';
       min-width: 250px;
     }
 
-    .toast.success { background-color: var(--color-success); }
-    .toast.error { background-color: var(--color-error); }
-    .toast.info { background-color: var(--color-primary); }
+    .toast.success { background-color: var(--color-success); border-left: 4px solid rgba(255,255,255,0.3); }
+    .toast.error { background-color: var(--color-error); border-left: 4px solid rgba(255,255,255,0.3); }
+    .toast.info { background-color: var(--color-info); border-left: 4px solid rgba(255,255,255,0.3); }
 
     @keyframes slideIn {
       from { transform: translateX(100%); opacity: 0; }

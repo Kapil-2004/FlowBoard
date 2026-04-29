@@ -80,8 +80,9 @@ FlowBoard utilizes a **Microservice Architecture** to ensure scalability and mai
 
 1.  **Auth Service (Port 5001)**: Handles identity, authentication, and user profiles.
 2.  **Workspace Service (Port 5002)**: Manages workspaces, memberships, and roles.
-3.  **Frontend (Port 4200)**: Angular SPA serving as the primary client interface.
-4.  **Shared Databases**: Independent PostgreSQL instances for each microservice to enforce data isolation.
+3.  **Board Service (Port 5003)**: Manages Kanban boards, lists, and task logic.
+4.  **Frontend (Port 4200)**: Angular SPA serving as the primary client interface.
+5.  **Shared Databases**: Independent PostgreSQL instances for each microservice to enforce data isolation.
 
 ---
 
@@ -222,12 +223,31 @@ We use **PostgreSQL** with Entity Framework Core's **Code-First** approach.
 
 - [x] UC1: User Authentication (JWT)
 - [x] UC2: User Profile Management
+- [x] UC3: Board Creation & Management
 - [x] UC4: Workspace Creation & Management
 - [x] UC5: Workspace Member Invitation
-- [ ] UC6: Real-time Kanban Boards
+- [x] UC6: Workspace Search (Member Discovery)
+- [x] UC7: Board Member Management
 - [ ] UC10: Task Lists & Card CRUD
 - [ ] UC15: Activity Logging & Audit Trails
-- [ ] UC24: Dark/Light Mode Dynamic Switching
+
+---
+
+## 🧪 Testing
+
+The backend includes a comprehensive suite of xUnit tests, covering both unit logic and full API integration.
+
+### Running Tests
+To run all backend tests across all services:
+```powershell
+cd Backend
+dotnet test
+```
+
+### Coverage
+- **UC1 (Auth)**: Comprehensive registration and login flow testing.
+- **UC3 (Board)**: Verified board persistence, workspace association, and role-based access control.
+- **Integration**: Full pipeline verification using InMemory database providers for Auth and Board services.
 
 ---
 
