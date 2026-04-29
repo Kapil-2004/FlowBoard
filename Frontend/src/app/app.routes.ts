@@ -3,6 +3,8 @@ import { AuthLayoutComponent } from './auth/auth-layout/auth-layout.component';
 import { LoginComponent } from './auth/login/login.component';
 import { SignupComponent } from './auth/signup/signup.component';
 import { DashboardComponent } from './dashboard.component';
+import { BoardListComponent } from './boards/board-list/board-list.component';
+import { BoardDetailComponent } from './boards/board-detail/board-detail.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -15,5 +17,7 @@ export const routes: Routes = [
     ]
   },
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'workspaces/:workspaceId/boards', component: BoardListComponent },
+  { path: 'boards/:id', component: BoardDetailComponent },
   { path: '**', redirectTo: 'login' }
 ];

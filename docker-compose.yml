@@ -38,6 +38,24 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres_board:
+    image: postgres:16-alpine
+    container_name: flowboard_board_db
+    environment:
+      POSTGRES_DB: flowboard_board_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_board_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_board_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
   # --- Backend (Auth Service) ---
   auth-service:
     build:
@@ -81,6 +99,27 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Backend (Board Service) ---
+  board-service:
+    build:
+      context: ./Backend/FlowBoard-Board
+      dockerfile: Dockerfile
+    container_name: flowboard_board_service
+    ports:
+      - "5003:5003"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5003
+      ConnectionStrings__DefaultConnection: "Host=postgres_board;Port=5432;Database=flowboard_board_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Cors__AllowedOrigins: "http://localhost:4200"
+    depends_on:
+      postgres_board:
+        condition: service_healthy
+    restart: unless-stopped
+
   # --- Frontend (Web Client) ---
   web-client:
     build:
@@ -92,6 +131,7 @@ services:
     depends_on:
       - auth-service
       - workspace-service
+      - board-service
     restart: unless-stopped
 
 volumes:
@@ -99,3 +139,5 @@ volumes:
     name: flowboard_postgres_data
   postgres_workspace_data:
     name: flowboard_postgres_workspace_data
+  postgres_board_data:
+    name: flowboard_postgres_board_data

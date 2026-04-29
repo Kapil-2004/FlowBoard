@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { WorkspaceService } from '../../services/workspace.service';
 import { NotificationService } from '../../services/notification.service';
 import { UserService, UserSearchDto } from '../../services/user.service';
@@ -10,355 +11,179 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs
 @Component({
   selector: 'app-workspace-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="workspace-section">
-      <div class="header-actions">
-        <h2>Your Workspaces</h2>
-        <button class="btn-primary" (click)="toggleCreateForm()">+ New Workspace</button>
+    <div class="workspace-container">
+      <header class="header">
+        <div class="header-left">
+          <h1 class="title">Workspaces</h1>
+          <p class="subtitle">Manage your teams and projects</p>
+        </div>
+        <button class="btn-primary" (click)="toggleCreateForm()">
+          <span class="icon">+</span>
+          New Workspace
+        </button>
+      </header>
+
+      <div *ngIf="showCreateForm" class="modal-overlay" (click)="toggleCreateForm()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Create Workspace</h3>
+            <button class="btn-close" (click)="toggleCreateForm()">×</button>
+          </div>
+          <form (ngSubmit)="onCreate()">
+            <div class="form-group">
+              <label>Workspace Name</label>
+              <input type="text" [(ngModel)]="newWorkspace.name" name="name" required placeholder="e.g. Engineering Team" />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea [(ngModel)]="newWorkspace.description" name="description" placeholder="What is this workspace for?" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Visibility</label>
+              <select [(ngModel)]="newWorkspace.visibility" name="visibility">
+                <option value="PRIVATE">Private</option>
+                <option value="PUBLIC">Public</option>
+              </select>
+            </div>
+            <div class="form-footer">
+              <button type="button" class="btn-ghost" (click)="toggleCreateForm()">Cancel</button>
+              <button type="submit" class="btn-primary" [disabled]="!newWorkspace.name">Create Workspace</button>
+            </div>
+          </form>
+        </div>
       </div>
 
-      <div *ngIf="showCreateForm" class="create-form card">
-        <h3>Create Workspace</h3>
-        <form (ngSubmit)="onCreate()">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" [(ngModel)]="newWorkspace.name" name="name" required placeholder="e.g. Engineering Team" />
-          </div>
-          <div class="form-group">
-            <label>Description</label>
-            <input type="text" [(ngModel)]="newWorkspace.description" name="description" placeholder="Optional description" />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn-primary" [disabled]="!newWorkspace.name">Create</button>
-            <button type="button" class="btn-secondary" (click)="toggleCreateForm()">Cancel</button>
-          </div>
-        </form>
-      </div>
-
-      <div class="grid">
-        <div class="card workspace-card" *ngFor="let ws of workspaces()">
-          <div class="ws-header">
-            <h3>{{ ws.name }}</h3>
-            <span class="badge" [class.private]="ws.visibility === 'PRIVATE'">{{ ws.visibility }}</span>
-          </div>
-          <p>{{ ws.description || 'No description provided.' }}</p>
-          <div class="ws-footer">
-            <small>Updated: {{ ws.updatedAt | date:'shortDate' }}</small>
-            <div class="actions">
-              <button class="btn-icon" (click)="toggleMembers(ws.workspaceId)" title="Manage Members">👥</button>
-              <button class="btn-link">View Board →</button>
+      <div class="workspace-grid">
+        <div class="workspace-card" *ngFor="let ws of workspaces()">
+          <div class="card-content">
+            <div class="card-header">
+              <h3 class="ws-name">{{ ws.name }}</h3>
+              <span class="badge" [class.private]="ws.visibility === 'PRIVATE'">{{ ws.visibility | lowercase }}</span>
+            </div>
+            <p class="ws-desc">{{ ws.description || 'Collaborate with your team members in this shared space.' }}</p>
+            <div class="card-footer">
+              <span class="meta-item">Updated {{ ws.updatedAt | date:'mediumDate' }}</span>
+              <div class="card-actions">
+                <button class="action-btn" (click)="toggleMembers(ws.workspaceId)" title="Members">👥</button>
+                <button class="btn-view" [routerLink]="['/workspaces', ws.workspaceId, 'boards']">
+                  View Boards <span class="arrow">→</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Member Management Section -->
-          <div *ngIf="managedWorkspaceId === ws.workspaceId" class="members-section">
-            <h4>Workspace Members</h4>
+          <!-- Quick Member View Popover -->
+          <div *ngIf="managedWorkspaceId === ws.workspaceId" class="members-popover" (click)="$event.stopPropagation()">
+            <div class="popover-header">
+              <h4>Members</h4>
+              <button (click)="managedWorkspaceId = null" class="btn-close-sm">×</button>
+            </div>
             <ul class="member-list">
               <li *ngFor="let member of workspaceMembers">
-                <span>{{ member.userId | slice:0:8 }}... ({{ member.role }})</span>
-                <button class="btn-remove" (click)="onRemoveMember(ws.workspaceId, member.userId)">✕</button>
+                <div class="member-info">
+                  <span class="member-name">UID: {{ member.userId | slice:0:8 }}</span>
+                  <span class="member-role">{{ member.role }}</span>
+                </div>
+                <button class="btn-remove-sm" (click)="onRemoveMember(ws.workspaceId, member.userId)">✕</button>
               </li>
             </ul>
-
-            <div class="add-member">
-              <input type="text" placeholder="Search user by name/email..." 
+            <div class="popover-search">
+              <input type="text" placeholder="Invite user..." 
                      (input)="onSearchInput($event)"
                      [(ngModel)]="searchQuery" />
-              
-              <div class="search-results" *ngIf="searchResults.length > 0">
+              <div class="search-dropdown" *ngIf="searchResults.length > 0">
                 <div *ngFor="let user of searchResults" class="search-item" (click)="onAddMember(ws.workspaceId, user.userId)">
-                  <span>{{ user.fullName }}</span>
-                  <small>{{ user.email }}</small>
+                  <span class="user-name">{{ user.fullName }}</span>
+                  <span class="user-email">{{ user.email }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="card placeholder" *ngIf="workspaces().length === 0 && !showCreateForm">
-          <p>You don't have any workspaces yet.</p>
-          <button class="btn-link" (click)="toggleCreateForm()">Create one now</button>
+        <div class="empty-state" *ngIf="workspaces().length === 0 && !showCreateForm">
+          <div class="empty-icon">🏢</div>
+          <h3>No workspaces found</h3>
+          <p>Create a workspace to group your boards and team members.</p>
+          <button class="btn-primary" (click)="toggleCreateForm()">+ Create Workspace</button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .workspace-section {
-      margin-top: 32px;
-    }
+    .workspace-container { padding: 40px; max-width: 1400px; margin: 0 auto; animation: fadeIn var(--transition-slow); }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 48px; }
+    .title { font-family: var(--font-heading); font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .subtitle { color: var(--color-text-secondary); font-size: 14px; }
 
-    .header-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
+    .btn-primary { background-color: #fff; color: #000; padding: 12px 24px; border-radius: var(--radius-md); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: all var(--transition-fast); }
+    .btn-primary:hover { background-color: #f0f0f0; transform: translateY(-2px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { color: var(--color-text-secondary); padding: 12px 24px; font-weight: 500; }
 
-    .header-actions h2 {
-      font-family: var(--font-heading);
-      font-size: 24px;
-      margin: 0;
-    }
+    .workspace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 32px; }
+    .workspace-card { background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 32px; position: relative; transition: all var(--transition-normal); display: flex; flex-direction: column; }
+    .workspace-card:hover { border-color: rgba(255, 255, 255, 0.3); transform: translateY(-4px); box-shadow: var(--shadow-md); }
 
-    .btn-primary {
-      background-color: var(--color-primary);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-weight: 500;
-      transition: background var(--transition-fast);
-    }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .ws-name { font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin: 0; }
+    .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; background: var(--color-accent-light); color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+    .badge.private { border-color: var(--color-border); }
 
-    .btn-primary:hover {
-      background-color: var(--color-primary-dark);
-    }
-    
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .ws-desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 32px; flex: 1; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--color-border); }
+    .meta-item { font-size: 11px; color: var(--color-text-placeholder); }
 
-    .btn-secondary {
-      background-color: transparent;
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-weight: 500;
-      margin-left: 8px;
-    }
+    .card-actions { display: flex; align-items: center; gap: 16px; }
+    .action-btn { color: var(--color-text-secondary); font-size: 18px; transition: color 0.2s; }
+    .action-btn:hover { color: #fff; }
 
-    .btn-link {
-      background: none;
-      border: none;
-      color: var(--color-primary);
-      font-weight: 500;
-      cursor: pointer;
-      padding: 0;
-    }
+    .btn-view { color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: color 0.2s; }
+    .btn-view:hover { color: var(--color-text-secondary); }
+    .btn-view .arrow { transition: transform 0.2s; }
+    .btn-view:hover .arrow { transform: translateX(4px); }
 
-    .create-form {
-      margin-bottom: 24px;
-      animation: slideDown 0.3s ease-out;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: var(--color-surface); width: 100%; max-width: 500px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); padding: 40px; animation: modalSlide 0.3s ease-out; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+    .modal-header h3 { font-family: var(--font-heading); font-size: 24px; font-weight: 700; }
+    .btn-close { font-size: 28px; color: var(--color-text-secondary); }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
+    .members-popover { position: absolute; top: 100%; right: 0; width: 300px; background: var(--color-surface-hover); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; margin-top: 12px; box-shadow: var(--shadow-lg); z-index: 100; animation: fadeIn 0.2s ease-out; }
+    .popover-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .popover-header h4 { font-size: 14px; font-weight: 700; }
+    .btn-close-sm { font-size: 18px; color: var(--color-text-secondary); }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 500;
-    }
+    .member-list { list-style: none; margin-bottom: 16px; max-height: 120px; overflow-y: auto; }
+    .member-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--color-border); }
+    .member-info { display: flex; flex-direction: column; gap: 2px; }
+    .member-name { font-size: 12px; font-weight: 600; }
+    .member-role { font-size: 10px; color: var(--color-text-placeholder); text-transform: uppercase; }
+    .btn-remove-sm { color: var(--color-error); font-size: 12px; opacity: 0.6; }
+    .btn-remove-sm:hover { opacity: 1; }
 
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background-color: var(--color-bg);
-      color: var(--color-text);
-    }
+    .popover-search input { width: 100%; background: var(--color-bg); border: 1px solid var(--color-border); padding: 10px; border-radius: 4px; font-size: 12px; color: #fff; }
+    .search-dropdown { position: absolute; top: 100%; left: 20px; right: 20px; background: var(--color-surface); border: 1px solid var(--color-border); max-height: 150px; overflow-y: auto; z-index: 101; }
+    .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--color-border); }
+    .search-item:hover { background: var(--color-accent-light); }
+    .user-name { font-size: 12px; font-weight: 600; display: block; }
+    .user-email { font-size: 10px; color: var(--color-text-secondary); }
 
-    .form-actions {
-      margin-top: 24px;
-    }
+    .form-group { margin-bottom: 24px; }
+    label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); margin-bottom: 10px; }
+    input[type="text"], textarea, select { width: 100%; background: var(--color-bg); border: 1px solid var(--color-border); padding: 14px; border-radius: 4px; color: #fff; font-size: 14px; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: #fff; }
+    .form-footer { display: flex; justify-content: flex-end; gap: 16px; margin-top: 40px; }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 24px;
-    }
+    .empty-state { grid-column: 1 / -1; padding: 100px 0; text-align: center; }
+    .empty-icon { font-size: 64px; margin-bottom: 24px; opacity: 0.3; }
+    .empty-state h3 { font-size: 24px; margin-bottom: 12px; }
+    .empty-state p { color: var(--color-text-secondary); margin-bottom: 32px; max-width: 400px; margin-left: auto; margin-right: auto; }
 
-    .card {
-      background-color: var(--color-surface);
-      padding: 24px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--color-border);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .workspace-card {
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .workspace-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .ws-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .ws-header h3 {
-      font-family: var(--font-heading);
-      font-size: 18px;
-      margin: 0;
-    }
-
-    .badge {
-      font-size: 10px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      background: var(--color-border);
-      color: var(--color-text-secondary);
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    .badge.private {
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--color-error);
-    }
-
-    .workspace-card p {
-      color: var(--color-text-secondary);
-      font-size: 14px;
-      flex: 1;
-      margin-bottom: 16px;
-    }
-
-    .ws-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid var(--color-border);
-      padding-top: 16px;
-      margin-top: auto;
-    }
-
-    .placeholder {
-      border: 2px dashed var(--color-border);
-      background: transparent;
-      box-shadow: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    .ws-footer .actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-icon {
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-
-    .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .members-section {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid var(--color-border);
-      animation: slideDown 0.2s ease-out;
-    }
-
-    .members-section h4 {
-      font-size: 14px;
-      margin-bottom: 12px;
-      color: var(--color-text-secondary);
-    }
-
-    .member-list {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 16px 0;
-    }
-
-    .member-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      padding: 6px 0;
-    }
-
-    .btn-remove {
-      background: none;
-      border: none;
-      color: var(--color-error);
-      cursor: pointer;
-      font-size: 12px;
-      opacity: 0.6;
-    }
-
-    .btn-remove:hover {
-      opacity: 1;
-    }
-
-    .add-member {
-      position: relative;
-    }
-
-    .add-member input {
-      width: 100%;
-      font-size: 12px;
-      padding: 8px;
-    }
-
-    .search-results {
-      position: absolute;
-      bottom: 100%;
-      left: 0;
-      right: 0;
-      background: var(--color-surface-elevated);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 10;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .search-item {
-      padding: 8px 12px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .search-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .search-item span {
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .search-item small {
-      font-size: 11px;
-      color: var(--color-text-secondary);
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalSlide { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class WorkspaceListComponent implements OnInit {
