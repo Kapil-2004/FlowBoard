@@ -8,7 +8,10 @@ import { NotificationService } from '../../services/notification.service';
 import { BoardResponseDto, BoardUpdateDto } from '../../models/board.models';
 import { ListDto, CreateListDto, UpdateListDto } from '../../models/list.models';
 import { CardService } from '../../services/card.service';
-import { CardDto, CreateCardDto } from '../../models/card.models';
+import { CardDto, CreateCardDto, UpdateCardDto, MoveCardDto } from '../../models/card.models';
+import { CommentService } from '../../services/comment.service';
+import { Comment, Attachment, CreateCommentDto } from '../../models/comment.models';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-board-detail',
@@ -22,6 +25,8 @@ export class BoardDetailComponent implements OnInit {
   private listService = inject(ListService);
   private notificationService = inject(NotificationService);
   private cardService = inject(CardService);
+  private commentService = inject(CommentService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   board = signal<BoardResponseDto | null>(null);
@@ -55,6 +60,26 @@ export class BoardDetailComponent implements OnInit {
   // Move list
   moveListId: number | null = null;
   moveTargetBoardId: number | null = null;
+
+  // Card Modal
+  selectedCard: CardDto | null = null;
+  cardComments: Comment[] = [];
+  cardAttachments: Attachment[] = [];
+  newCommentContent = '';
+  newAttachmentUrl = '';
+  newAttachmentName = '';
+
+  // Card Drag & Drop
+  draggedCard: CardDto | null = null;
+
+  get currentUserId(): number {
+    const user = this.authService.currentUser();
+    if (user && user.id) {
+      const parsed = parseInt(user.id, 10);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 1;
+  }
 
   ngOnInit() {
     this.loadBoard();
@@ -251,6 +276,208 @@ export class BoardDetailComponent implements OnInit {
   }
 
   onDragEnd() { this.draggedListId = null; this.dragOverListId = null; }
+
+  // ── Card Drag & Drop ────────────────────────────────────────────────────────
+  onCardDragStart(event: DragEvent, card: CardDto) {
+    event.stopPropagation(); // Prevent list drag
+    this.draggedCard = card;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', card.cardId.toString());
+    }
+  }
+
+  onCardDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+  }
+
+  onCardDrop(event: DragEvent, targetListId: number, targetCard?: CardDto) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (!this.draggedCard || this.draggedCard.cardId === targetCard?.cardId) {
+      this.draggedCard = null;
+      return;
+    }
+
+    const cardId = this.draggedCard.cardId;
+    const sourceListId = this.draggedCard.listId;
+    
+    const currentListCards = this.cardsByList()[sourceListId] || [];
+    const targetListCards = this.cardsByList()[targetListId] || [];
+
+    // Optimistic UI update
+    const sourceIdx = currentListCards.findIndex(c => c.cardId === cardId);
+    if (sourceIdx !== -1) {
+      currentListCards.splice(sourceIdx, 1);
+    }
+    
+    let targetIdx = targetListCards.length;
+    if (targetCard) {
+       targetIdx = targetListCards.findIndex(c => c.cardId === targetCard.cardId);
+    }
+    
+    const movedCard = { ...this.draggedCard, listId: targetListId };
+    
+    if (sourceListId === targetListId) {
+       currentListCards.splice(targetIdx, 0, movedCard);
+       this.cardsByList.set({ ...this.cardsByList(), [sourceListId]: [...currentListCards] });
+    } else {
+       targetListCards.splice(targetIdx, 0, movedCard);
+       this.cardsByList.set({
+          ...this.cardsByList(),
+          [sourceListId]: [...currentListCards],
+          [targetListId]: [...targetListCards]
+       });
+    }
+
+    // Call API
+    const targetPosition = targetIdx; 
+    const dto: MoveCardDto = { targetListId, targetPosition };
+    
+    this.cardService.moveCard(cardId, dto).subscribe({
+      error: () => {
+        this.notificationService.error('Failed to move card');
+        this.loadCards(this.board()!.boardId); // rollback
+      }
+    });
+
+    this.draggedCard = null;
+  }
+
+  onCardDragEnd() { this.draggedCard = null; }
+
+  // ── Card Modal & Comments ───────────────────────────────────────────────────
+  getListName(listId: number): string {
+    return this.lists().find(l => l.listId === listId)?.name || 'Unknown List';
+  }
+
+  openCard(card: CardDto) {
+    this.selectedCard = { ...card };
+    this.loadCardDetails();
+  }
+
+  closeCardModal() {
+    this.selectedCard = null;
+    this.cardComments = [];
+    this.cardAttachments = [];
+  }
+
+  loadCardDetails() {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.cardId;
+    
+    this.commentService.getByCard(cardId).subscribe({
+      next: comments => this.cardComments = comments
+    });
+    
+    this.commentService.getAttachmentsByCard(cardId).subscribe({
+      next: atts => this.cardAttachments = atts
+    });
+  }
+
+  updateCardDetails() {
+    if (!this.selectedCard) return;
+    const dto: UpdateCardDto = {
+       title: this.selectedCard.title,
+       description: this.selectedCard.description,
+       priority: this.selectedCard.priority,
+       status: this.selectedCard.status
+    };
+    this.cardService.updateCard(this.selectedCard.cardId, dto).subscribe({
+       next: (updated) => {
+         // Update card in local board state
+         const listId = updated.listId;
+         const currentCards = this.cardsByList()[listId] || [];
+         const idx = currentCards.findIndex(c => c.cardId === updated.cardId);
+         if (idx !== -1) {
+            const newCards = [...currentCards];
+            newCards[idx] = updated;
+            this.cardsByList.set({ ...this.cardsByList(), [listId]: newCards });
+         }
+       }
+    });
+  }
+
+  onDeleteCard() {
+    if (!this.selectedCard) return;
+    if (confirm('Delete this card permanently?')) {
+      const cardId = this.selectedCard.cardId;
+      const listId = this.selectedCard.listId;
+      this.cardService.deleteCard(cardId).subscribe({
+        next: () => {
+           const listCards = this.cardsByList()[listId] || [];
+           this.cardsByList.set({
+              ...this.cardsByList(),
+              [listId]: listCards.filter(c => c.cardId !== cardId)
+           });
+           this.closeCardModal();
+           this.notificationService.success('Card deleted');
+        }
+      });
+    }
+  }
+
+  // ── Comments & Attachments ──────────────────────────────────────────────────
+  getAuthorInitial(authorId: number): string {
+    return 'U'; // Mocked for now, in real app fetch user profile
+  }
+
+  onAddComment() {
+    if (!this.selectedCard || !this.newCommentContent.trim()) return;
+    const dto: CreateCommentDto = {
+       cardId: this.selectedCard.cardId,
+       authorId: this.currentUserId,
+       content: this.newCommentContent.trim()
+    };
+    this.commentService.addComment(dto).subscribe({
+       next: (comment) => {
+          this.cardComments = [comment, ...this.cardComments];
+          this.newCommentContent = '';
+       }
+    });
+  }
+
+  onDeleteComment(commentId: number) {
+    if (confirm('Delete this comment?')) {
+       this.commentService.deleteComment(commentId).subscribe({
+          next: () => {
+             this.cardComments = this.cardComments.filter(c => c.commentId !== commentId);
+          }
+       });
+    }
+  }
+
+  onAddAttachment() {
+    if (!this.selectedCard || !this.newAttachmentUrl.trim()) return;
+    const att: Partial<Attachment> = {
+       cardId: this.selectedCard.cardId,
+       uploaderId: this.currentUserId,
+       fileName: this.newAttachmentName || 'Link Attachment',
+       fileUrl: this.newAttachmentUrl,
+       fileType: 'link',
+       sizeKb: 0
+    };
+    this.commentService.addAttachment(att).subscribe({
+       next: (newAtt) => {
+          this.cardAttachments = [...this.cardAttachments, newAtt];
+          this.newAttachmentUrl = '';
+          this.newAttachmentName = '';
+       }
+    });
+  }
+
+  onDeleteAttachment(attId: number) {
+    if (confirm('Delete this attachment?')) {
+       this.commentService.deleteAttachment(attId).subscribe({
+          next: () => {
+             this.cardAttachments = this.cardAttachments.filter(a => a.attachmentId !== attId);
+          }
+       });
+    }
+  }
 
   // ── Archive / Unarchive ─────────────────────────────────────────────────────
   onArchiveList(listId: number) {

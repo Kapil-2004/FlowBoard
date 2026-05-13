@@ -89,7 +89,37 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres_comment:
+    image: postgres:16-alpine
+    container_name: flowboard_comment_db
+    environment:
+      POSTGRES_DB: flowboard_comment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_comment_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_comment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: flowboard_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # --- Backend (Auth Service) ---
   auth-service:
@@ -197,6 +227,30 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Backend (Comment & Attachment Service) ---
+  comment-service:
+    build:
+      context: ./Backend/FlowBoard-Comment_AttachmentService
+      dockerfile: Dockerfile
+    container_name: flowboard_comment_service
+    ports:
+      - "5006:5006"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5006
+      ConnectionStrings__DefaultConnection: "Host=postgres_comment;Port=5432;Database=flowboard_comment_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Cors__AllowedOrigins: "http://localhost:4200"
+      RabbitMQ__Host: "rabbitmq"
+    depends_on:
+      postgres_comment:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
   # --- Frontend (Web Client) ---
   web-client:
     build:
@@ -211,6 +265,7 @@ services:
       - board-service
       - list-service
       - card-service
+      - comment-service
     restart: unless-stopped
 
 volumes:
@@ -224,3 +279,6 @@ volumes:
     name: flowboard_postgres_list_data
   postgres_card_data:
     name: flowboard_postgres_card_data
+  postgres_comment_data:
+    name: flowboard_postgres_comment_data
+
