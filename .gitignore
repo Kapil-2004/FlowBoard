@@ -1,26 +1,32 @@
-# .gitignore for FlowBoard (Monorepo)
+# .gitignore for FlowBoard Monorepo
 
-# --- Dotnet (.NET Core) ---
+# ── .NET / ASP.NET Core ───────────────────────────────────────────────────────
 [Bb]in/
 [Oo]bj/
 *.user
 *.userosscache
 *.sln.docstates
-.vs/
-.vscode/
 *.suo
-*.user
-*.userosscache
-*.sln.docstates
 *.db
 *.db-shm
 *.db-wal
+TestResults/
+coverage.cobertura.xml
+.vs/
 
-# User-specific files
-.idea/
-.DS_Store
+# ── Secrets & Config ─────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+*.pfx
+*.certificate
+secrets/
 
-# --- Node / Angular ---
+# ── Node / Angular ────────────────────────────────────────────────────────────
 node_modules/
 .angular/
 dist/
@@ -31,21 +37,36 @@ bazel-out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnp
+.pnp.js
 
-# --- Environment Secrets ---
-.env
-.env.*
-!.env.example
-appsettings.Local.json
-*.pfx
-*.certificate
+# ── IDE & Editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# --- Docker ---
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ── Docker ────────────────────────────────────────────────────────────────────
 .docker/
-# Don't ignore dockerfiles or compose files
+# Keep dockerfiles and compose files tracked:
+# !Dockerfile
 # !docker-compose.yml
 
-# --- OS specific ---
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Build artifacts ──────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg

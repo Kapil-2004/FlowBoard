@@ -49,7 +49,7 @@
                [style.border-top-color]="list.color"
                [class.dragging]="draggedListId === list.listId"
                [class.drag-over]="dragOverListId === list.listId"
-               draggable="true"
+               [draggable]="!board()?.isClosed"
                (dragstart)="onDragStart($event, list.listId)"
                (dragover)="onDragOver($event, list.listId)"
                (dragleave)="onDragLeave()"
@@ -59,7 +59,7 @@
             <div class="list-header">
               <!-- Inline Rename -->
               <div class="list-title-area" *ngIf="editingListId !== list.listId">
-                <span class="drag-handle" title="Drag to reorder">⠿</span>
+                <span class="drag-handle" *ngIf="!board()?.isClosed" title="Drag to reorder">⠿</span>
                 <h3 class="list-title" (dblclick)="startEditName(list)">{{ list.name }}</h3>
               </div>
               <div class="list-title-edit" *ngIf="editingListId === list.listId">
@@ -71,7 +71,7 @@
               </div>
 
               <!-- List Actions Menu -->
-              <div class="list-menu">
+              <div class="list-menu" *ngIf="!board()?.isClosed">
                 <div class="color-picker-inline" *ngIf="editingColorId === list.listId">
                   <input type="color" [(ngModel)]="editingColorValue"
                          (change)="saveEditColor(list)"
@@ -92,14 +92,38 @@
               </div>
 
               <!-- Cards -->
-              <div class="task-card" *ngFor="let card of cardsByList()[list.listId]">
+              <div class="task-card" *ngFor="let card of cardsByList()[list.listId]"
+                   [draggable]="!board()?.isClosed"
+                   [class.dragging]="draggedCard?.cardId === card.cardId"
+                   (dragstart)="onCardDragStart($event, card)"
+                   (dragover)="onCardDragOver($event)"
+                   (drop)="onCardDrop($event, list.listId, card)"
+                   (dragend)="onCardDragEnd()"
+                   (click)="openCard(card)">
                 <div class="card-cover" *ngIf="card.coverColor" [style.backgroundColor]="card.coverColor"></div>
                 <div class="card-content">
                   <div class="card-labels" *ngIf="card.priority">
                     <span class="priority-label" [class]="card.priority.toLowerCase()">{{ card.priority }}</span>
                   </div>
-                  <h4 class="card-title">{{ card.title }}</h4>
+                  <h4 class="card-title" (click)="openCard(card); $event.stopPropagation()">{{ card.title }}</h4>
+                  <div class="card-badges">
+                    <span class="badge" title="View Details" (click)="openCard(card); $event.stopPropagation()">
+                      <span class="badge-icon">👁️</span>
+                    </span>
+                    <span class="badge" title="Comments">
+                      <span class="badge-icon">💬</span>
+                    </span>
+                    <span class="badge" title="Attachments">
+                      <span class="badge-icon">📎</span>
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              <!-- Drop zone for empty list -->
+              <div class="empty-list-drop-zone" *ngIf="cardsByList()[list.listId]?.length === 0"
+                   (dragover)="onCardDragOver($event)"
+                   (drop)="onCardDrop($event, list.listId)">
               </div>
 
               <!-- Add Card Form -->
@@ -116,13 +140,13 @@
               </div>
             </div>
 
-            <button class="create-task-btn" *ngIf="!showAddCard[list.listId]" (click)="openAddCard(list.listId)">
+            <button class="create-task-btn" *ngIf="!showAddCard[list.listId] && !board()?.isClosed" (click)="openAddCard(list.listId)">
               <span>+</span> Add Card
             </button>
           </div>
 
           <!-- New List Interface -->
-          <div class="add-list-wrapper">
+          <div class="add-list-wrapper" *ngIf="!board()?.isClosed">
             <button *ngIf="!showAddList" class="ghost-add-btn" (click)="showAddList = true">
               <span class="plus">+</span> Add another list
             </button>
@@ -279,6 +303,95 @@
       <div class="modal-actions">
         <button type="button" class="btn-text" (click)="closeMoveModal()">Cancel</button>
         <button class="btn-solid" [disabled]="!moveTargetBoardId" (click)="onMoveList()">Move Column</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card Detail Modal with Comments & Attachments -->
+<div class="modal-overlay" *ngIf="selectedCard" (click)="closeCardModal()">
+  <div class="modal-surface card-modal" (click)="$event.stopPropagation()">
+    <header class="modal-header">
+      <div class="card-title-header">
+        <h2>{{ selectedCard.title }}</h2>
+        <span class="list-ref">in list <strong>{{ getListName(selectedCard.listId) }}</strong></span>
+      </div>
+      <button class="close-btn" (click)="closeCardModal()">×</button>
+    </header>
+
+    <div class="card-body-layout">
+      <div class="card-main">
+        <section class="card-section">
+          <h3>Description</h3>
+          <textarea class="card-desc-input" [(ngModel)]="selectedCard.description" placeholder="Add a more detailed description..." (blur)="updateCardDetails()"></textarea>
+        </section>
+
+        <section class="card-section">
+          <h3>Attachments</h3>
+          <div class="attachment-list" *ngIf="cardAttachments.length > 0">
+            <div class="attachment-item" *ngFor="let att of cardAttachments">
+              <span class="att-icon">📎</span>
+              <div class="att-details">
+                <span class="att-name">{{ att.fileName }}</span>
+                <span class="att-meta">{{ att.uploadedAt | date:'MMM d, y, h:mm a' }} - {{ att.sizeKb }} KB</span>
+              </div>
+              <a [href]="att.fileUrl" target="_blank" class="att-action">Open</a>
+              <button class="danger-btn-text" (click)="onDeleteAttachment(att.attachmentId)">Delete</button>
+            </div>
+          </div>
+          <div class="add-attachment-area">
+             <input type="text" [(ngModel)]="newAttachmentUrl" placeholder="File URL (e.g., https://.../image.png)" class="att-input" />
+             <input type="text" [(ngModel)]="newAttachmentName" placeholder="File Name" class="att-input" />
+             <button class="btn-solid-sm" (click)="onAddAttachment()">Attach Link</button>
+          </div>
+        </section>
+
+        <section class="card-section">
+          <h3>Activity & Comments</h3>
+          <div class="comment-input-area">
+            <textarea [(ngModel)]="newCommentContent" placeholder="Write a comment..." class="comment-box"></textarea>
+            <button class="btn-solid-sm" [disabled]="!newCommentContent.trim()" (click)="onAddComment()">Save</button>
+          </div>
+
+          <div class="comments-list">
+            <div class="comment-item" *ngFor="let comment of cardComments">
+              <div class="comment-avatar">{{ getAuthorInitial(comment.authorId) }}</div>
+              <div class="comment-content-wrapper">
+                <div class="comment-header">
+                  <span class="comment-author">User {{ comment.authorId }}</span>
+                  <span class="comment-time">{{ comment.createdAt | date:'MMM d, h:mm a' }}</span>
+                </div>
+                <div class="comment-body">
+                  <p>{{ comment.content }}</p>
+                </div>
+                <div class="comment-actions">
+                  <button class="comment-action-btn danger" (click)="onDeleteComment(comment.commentId)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="card-sidebar">
+         <h4 class="sidebar-title">Status</h4>
+         <select [(ngModel)]="selectedCard.status" (change)="updateCardDetails()" class="select-input">
+           <option value="TO_DO">To Do</option>
+           <option value="IN_PROGRESS">In Progress</option>
+           <option value="IN_REVIEW">In Review</option>
+           <option value="DONE">Done</option>
+         </select>
+
+         <h4 class="sidebar-title">Priority</h4>
+         <select [(ngModel)]="selectedCard.priority" (change)="updateCardDetails()" class="select-input">
+           <option value="LOW">Low</option>
+           <option value="MEDIUM">Medium</option>
+           <option value="HIGH">High</option>
+           <option value="CRITICAL">Critical</option>
+         </select>
+
+         <h4 class="sidebar-title">Actions</h4>
+         <button class="sidebar-btn danger" (click)="onDeleteCard()">🗑️ Delete Card</button>
       </div>
     </div>
   </div>
