@@ -1,0 +1,267 @@
+<div class="board-wrapper" *ngIf="board()" [style.--accent-color]="board()!.background">
+
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <button class="icon-btn back-btn" (click)="goBack()" title="Back">
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <div class="divider"></div>
+      <div class="board-info">
+        <div class="title-row">
+          <h1 class="board-name">{{ board()!.name }}</h1>
+          <span class="status-tag" [class.closed]="board()!.isClosed">
+            {{ board()!.isClosed ? 'Archived' : 'Active' }}
+          </span>
+        </div>
+        <p class="workspace-label">Sprint / Workspace / {{ board()!.visibility | lowercase }}</p>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="members-overlap">
+        <div class="avatar" *ngFor="let member of board()!.members" [title]="member.userId">
+          {{ member.role[0] }}
+        </div>
+        <button class="add-member-btn" title="Add Members">+</button>
+      </div>
+      <div class="divider"></div>
+      <button class="premium-btn" (click)="toggleArchivedPanel()" [class.active]="showArchivedPanel">
+        <span class="icon">📦</span>
+        Archive
+      </button>
+      <button class="premium-btn" (click)="toggleEditForm()">
+        <span class="icon">⚙️</span>
+        Settings
+      </button>
+    </div>
+  </nav>
+
+  <div class="board-body">
+    <!-- Main Kanban Area -->
+    <main class="kanban-area">
+      <div class="kanban-scroller">
+        <div class="kanban-track">
+
+          <!-- Kanban Columns (Draggable) -->
+          <div class="list-column"
+               *ngFor="let list of lists()"
+               [style.border-top-color]="list.color"
+               [class.dragging]="draggedListId === list.listId"
+               [class.drag-over]="dragOverListId === list.listId"
+               draggable="true"
+               (dragstart)="onDragStart($event, list.listId)"
+               (dragover)="onDragOver($event, list.listId)"
+               (dragleave)="onDragLeave()"
+               (drop)="onDrop($event, list.listId)"
+               (dragend)="onDragEnd()">
+
+            <div class="list-header">
+              <!-- Inline Rename -->
+              <div class="list-title-area" *ngIf="editingListId !== list.listId">
+                <span class="drag-handle" title="Drag to reorder">⠿</span>
+                <h3 class="list-title" (dblclick)="startEditName(list)">{{ list.name }}</h3>
+              </div>
+              <div class="list-title-edit" *ngIf="editingListId === list.listId">
+                <input type="text" [(ngModel)]="editingListName"
+                       (keyup.enter)="saveEditName(list)"
+                       (keyup.escape)="cancelEditName()"
+                       (blur)="saveEditName(list)"
+                       class="inline-edit-input" autofocus />
+              </div>
+
+              <!-- List Actions Menu -->
+              <div class="list-menu">
+                <div class="color-picker-inline" *ngIf="editingColorId === list.listId">
+                  <input type="color" [(ngModel)]="editingColorValue"
+                         (change)="saveEditColor(list)"
+                         class="mini-color-input" />
+                </div>
+                <button class="list-action-btn" (click)="startEditColor(list)" title="Change Color">🎨</button>
+                <button class="list-action-btn" (click)="startEditName(list)" title="Rename">✏️</button>
+                <button class="list-action-btn" (click)="openMoveModal(list.listId)" title="Move to Board">↗️</button>
+                <button class="list-action-btn" (click)="onArchiveList(list.listId)" title="Archive">📦</button>
+                <button class="list-action-btn danger" (click)="onDeleteList(list.listId)" title="Delete">×</button>
+              </div>
+            </div>
+
+            <div class="task-container">
+              <div class="empty-state-card">
+                <p>No tasks yet</p>
+                <span>Click below to add</span>
+              </div>
+            </div>
+
+            <button class="create-task-btn">
+              <span>+</span> Add Card
+            </button>
+          </div>
+
+          <!-- New List Interface -->
+          <div class="add-list-wrapper">
+            <button *ngIf="!showAddList" class="ghost-add-btn" (click)="showAddList = true">
+              <span class="plus">+</span> Add another list
+            </button>
+
+            <div *ngIf="showAddList" class="list-form-card animate-in">
+              <input type="text" [(ngModel)]="newList.name"
+                     placeholder="List title..." (keyup.enter)="onCreateList()"
+                     (keyup.escape)="showAddList = false" autofocus />
+              <div class="color-row">
+                <label class="color-label">Accent</label>
+                <input type="color" [(ngModel)]="newList.color" class="mini-color-input" />
+                <code class="color-hex">{{ newList.color }}</code>
+              </div>
+              <div class="form-actions">
+                <button class="submit-btn" (click)="onCreateList()">Create</button>
+                <button class="cancel-btn" (click)="showAddList = false">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Dynamic Sidebar -->
+    <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <button class="sidebar-toggle" (click)="sidebarCollapsed = !sidebarCollapsed">
+        <span class="material-icons">{{ sidebarCollapsed ? 'first_page' : 'last_page' }}</span>
+      </button>
+
+      <div class="sidebar-content" *ngIf="!sidebarCollapsed">
+        <section class="sidebar-section">
+          <h4 class="sidebar-label">Description</h4>
+          <p class="sidebar-text">{{ board()!.description || 'Describe your vision for this board...' }}</p>
+        </section>
+
+        <section class="sidebar-section">
+          <h4 class="sidebar-label">Information</h4>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <span class="stat-val">{{ board()!.createdAt | date:'MMM d' }}</span>
+              <span class="stat-lbl">Created</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">{{ lists().length }}</span>
+              <span class="stat-lbl">Lists</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="sidebar-footer">
+          <button class="danger-btn-outline" (click)="onDelete()">Delete Board</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" *ngIf="showEditForm" (click)="toggleEditForm()">
+    <div class="modal-surface" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>Board Settings</h2>
+        <button class="close-btn" (click)="toggleEditForm()">×</button>
+      </header>
+
+      <form (ngSubmit)="onUpdate()" class="modal-form">
+        <div class="input-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="editBoard.name" name="name" />
+        </div>
+        <div class="input-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="editBoard.description" name="description" rows="3"></textarea>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Theme Color</label>
+            <div class="color-picker-custom">
+              <input type="color" [(ngModel)]="editBoard.background" name="background" />
+              <code>{{ editBoard.background }}</code>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Visibility</label>
+            <select [(ngModel)]="editBoard.visibility" name="visibility">
+              <option value="PRIVATE">Private</option>
+              <option value="PUBLIC">Public</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-text" (click)="toggleEditForm()">Cancel</button>
+          <button type="submit" class="btn-solid">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Archived Lists Panel -->
+  <div class="modal-overlay" *ngIf="showArchivedPanel" (click)="toggleArchivedPanel()">
+    <div class="modal-surface archived-panel" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>Archived Columns</h2>
+        <button class="close-btn" (click)="toggleArchivedPanel()">×</button>
+      </header>
+
+      <div class="archived-list" *ngIf="archivedLists().length > 0">
+        <div class="archived-item" *ngFor="let list of archivedLists()">
+          <div class="archived-info">
+            <div class="archived-color-dot" [style.background]="list.color"></div>
+            <div>
+              <span class="archived-name">{{ list.name }}</span>
+              <span class="archived-date">Archived · Position {{ list.position }}</span>
+            </div>
+          </div>
+          <div class="archived-actions">
+            <button class="restore-btn" (click)="onUnarchiveList(list.listId)">Restore</button>
+            <button class="delete-sm-btn" (click)="onDeleteArchivedList(list.listId)">🗑️</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="archived-empty" *ngIf="archivedLists().length === 0">
+        <p>No archived columns</p>
+        <span>Archived columns will appear here</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Move List Modal -->
+  <div class="modal-overlay" *ngIf="showMoveModal" (click)="closeMoveModal()">
+    <div class="modal-surface move-panel" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>Move Column</h2>
+        <button class="close-btn" (click)="closeMoveModal()">×</button>
+      </header>
+
+      <p class="move-desc">Select the target board to move this column to:</p>
+
+      <div class="board-select-list" *ngIf="allBoards().length > 0">
+        <div class="board-select-item"
+             *ngFor="let b of allBoards()"
+             [class.selected]="moveTargetBoardId === b.boardId"
+             (click)="moveTargetBoardId = b.boardId">
+          <div class="board-select-accent" [style.background]="b.background"></div>
+          <span class="board-select-name">{{ b.name }}</span>
+          <span class="board-select-check" *ngIf="moveTargetBoardId === b.boardId">✓</span>
+        </div>
+      </div>
+
+      <div class="archived-empty" *ngIf="allBoards().length === 0">
+        <p>No other boards available</p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-text" (click)="closeMoveModal()">Cancel</button>
+        <button class="btn-solid" [disabled]="!moveTargetBoardId" (click)="onMoveList()">Move Column</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen Loader -->
+<div class="loader-overlay" *ngIf="!board()">
+  <div class="loader-ripple"></div>
+  <p>Building your board environment...</p>
+</div>

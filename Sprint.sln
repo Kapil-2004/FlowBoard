@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
@@ -18,6 +18,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowBoard-Board", "Backend\FlowBoard-Board\FlowBoard-Board.csproj", "{17F54890-2DAA-405F-8A99-0A73FF73EC3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "workspace-tests", "Backend\test\workspace-tests\workspace-tests.csproj", "{92982389-D8F4-40BB-9ADE-9FE39E03FDE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowBoard-ListService", "Backend\FlowBoard-ListService\FlowBoard-ListService.csproj", "{A1B2C3D4-1111-2222-3333-444455556666}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "list-tests", "Backend\test\list-tests\list-tests.csproj", "{B2C3D4E5-2222-3333-4444-555566667777}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +105,14 @@ Global
 		{92982389-D8F4-40BB-9ADE-9FE39E03FDE0}.Release|x64.Build.0 = Release|Any CPU
 		{92982389-D8F4-40BB-9ADE-9FE39E03FDE0}.Release|x86.ActiveCfg = Release|Any CPU
 		{92982389-D8F4-40BB-9ADE-9FE39E03FDE0}.Release|x86.Build.0 = Release|Any CPU
+		{A1B2C3D4-1111-2222-3333-444455556666}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-1111-2222-3333-444455556666}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-1111-2222-3333-444455556666}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-1111-2222-3333-444455556666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C3D4E5-2222-3333-4444-555566667777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-2222-3333-4444-555566667777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-2222-3333-4444-555566667777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-2222-3333-4444-555566667777}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +125,8 @@ Global
 		{20E9A5F7-EAB6-4495-90B4-D676D11010B5} = {C9F2D317-4826-407B-F8B2-698283998959}
 		{17F54890-2DAA-405F-8A99-0A73FF73EC3B} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 		{92982389-D8F4-40BB-9ADE-9FE39E03FDE0} = {C9F2D317-4826-407B-F8B2-698283998959}
+		{A1B2C3D4-1111-2222-3333-444455556666} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{B2C3D4E5-2222-3333-4444-555566667777} = {C9F2D317-4826-407B-F8B2-698283998959}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7A1B849-1179-4A3E-995D-CCFB9A97C504}
