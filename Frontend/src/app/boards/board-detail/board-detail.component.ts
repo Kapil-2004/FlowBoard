@@ -7,6 +7,8 @@ import { ListService } from '../../services/list.service';
 import { NotificationService } from '../../services/notification.service';
 import { BoardResponseDto, BoardUpdateDto } from '../../models/board.models';
 import { ListDto, CreateListDto, UpdateListDto } from '../../models/list.models';
+import { CardService } from '../../services/card.service';
+import { CardDto, CreateCardDto } from '../../models/card.models';
 
 @Component({
   selector: 'app-board-detail',
@@ -19,12 +21,14 @@ export class BoardDetailComponent implements OnInit {
   private boardService = inject(BoardService);
   private listService = inject(ListService);
   private notificationService = inject(NotificationService);
+  private cardService = inject(CardService);
   private route = inject(ActivatedRoute);
 
   board = signal<BoardResponseDto | null>(null);
   lists = signal<ListDto[]>([]);
   archivedLists = signal<ListDto[]>([]);
   allBoards = signal<BoardResponseDto[]>([]);
+  cardsByList = signal<Record<number, CardDto[]>>({});
 
   showEditForm = false;
   showAddList = false;
@@ -34,6 +38,9 @@ export class BoardDetailComponent implements OnInit {
 
   editBoard: BoardUpdateDto = { name: '', description: '', background: '', visibility: '' };
   newList: CreateListDto = { boardId: 0, name: '', color: '#6366F1' };
+
+  showAddCard: Record<number, boolean> = {};
+  newCardTitle: Record<number, string> = {};
 
   // Inline editing
   editingListId: number | null = null;
@@ -69,8 +76,27 @@ export class BoardDetailComponent implements OnInit {
 
   loadLists(boardId: number) {
     this.listService.getListsByBoard(boardId).subscribe({
-      next: (lists) => this.lists.set(lists),
+      next: (lists) => {
+        this.lists.set(lists);
+        this.loadCards(boardId);
+      },
       error: () => this.notificationService.error('Failed to load board columns. Check service connection.')
+    });
+  }
+
+  loadCards(boardId: number) {
+    this.cardService.getCardsByBoard(boardId).subscribe({
+      next: (cards) => {
+        const grouped: Record<number, CardDto[]> = {};
+        for (const list of this.lists()) {
+          grouped[list.listId] = [];
+        }
+        for (const card of cards) {
+          if (!grouped[card.listId]) grouped[card.listId] = [];
+          grouped[card.listId].push(card);
+        }
+        this.cardsByList.set(grouped);
+      }
     });
   }
 
@@ -95,6 +121,38 @@ export class BoardDetailComponent implements OnInit {
         this.notificationService.success('List added');
       },
       error: () => this.notificationService.error('Failed to create list')
+    });
+  }
+
+  // ── Create Card ─────────────────────────────────────────────────────────────
+  openAddCard(listId: number) {
+    this.showAddCard[listId] = true;
+    this.newCardTitle[listId] = '';
+  }
+
+  closeAddCard(listId: number) {
+    this.showAddCard[listId] = false;
+  }
+
+  onCreateCard(listId: number) {
+    const title = this.newCardTitle[listId];
+    if (!title?.trim()) return;
+    const dto: CreateCardDto = {
+      listId,
+      boardId: this.board()!.boardId,
+      title: title,
+      priority: 'MEDIUM',
+      status: 'TO_DO'
+    };
+    this.cardService.createCard(dto).subscribe({
+      next: (card) => {
+        const current = { ...this.cardsByList() };
+        if (!current[listId]) current[listId] = [];
+        current[listId] = [...current[listId], card];
+        this.cardsByList.set(current);
+        this.closeAddCard(listId);
+      },
+      error: () => this.notificationService.error('Failed to create card')
     });
   }
 

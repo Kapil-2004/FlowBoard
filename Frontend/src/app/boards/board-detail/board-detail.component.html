@@ -86,13 +86,37 @@
             </div>
 
             <div class="task-container">
-              <div class="empty-state-card">
+              <div class="empty-state-card" *ngIf="!cardsByList()[list.listId]?.length && !showAddCard[list.listId]">
                 <p>No tasks yet</p>
                 <span>Click below to add</span>
               </div>
+
+              <!-- Cards -->
+              <div class="task-card" *ngFor="let card of cardsByList()[list.listId]">
+                <div class="card-cover" *ngIf="card.coverColor" [style.backgroundColor]="card.coverColor"></div>
+                <div class="card-content">
+                  <div class="card-labels" *ngIf="card.priority">
+                    <span class="priority-label" [class]="card.priority.toLowerCase()">{{ card.priority }}</span>
+                  </div>
+                  <h4 class="card-title">{{ card.title }}</h4>
+                </div>
+              </div>
+
+              <!-- Add Card Form -->
+              <div class="add-card-form" *ngIf="showAddCard[list.listId]">
+                <textarea [(ngModel)]="newCardTitle[list.listId]" 
+                          placeholder="Enter a title for this card..." 
+                          autofocus 
+                          (keyup.enter)="onCreateCard(list.listId)"
+                          (keyup.escape)="closeAddCard(list.listId)"></textarea>
+                <div class="add-card-actions">
+                  <button class="submit-btn" (click)="onCreateCard(list.listId)">Add Card</button>
+                  <button class="cancel-btn" (click)="closeAddCard(list.listId)">✕</button>
+                </div>
+              </div>
             </div>
 
-            <button class="create-task-btn">
+            <button class="create-task-btn" *ngIf="!showAddCard[list.listId]" (click)="openAddCard(list.listId)">
               <span>+</span> Add Card
             </button>
           </div>

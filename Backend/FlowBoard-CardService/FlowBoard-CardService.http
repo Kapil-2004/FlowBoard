@@ -1,0 +1,6 @@
+@FlowBoard_CardService_HostAddress = http://localhost:5032
+
+GET {{FlowBoard_CardService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
