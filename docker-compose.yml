@@ -106,6 +106,23 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres_label:
+    image: postgres:16-alpine
+    container_name: flowboard_label_db
+    environment:
+      POSTGRES_DB: flowboard_label_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_label_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_label_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: flowboard_rabbitmq
@@ -251,6 +268,27 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Backend (Label & Checklist Service) ---
+  label-service:
+    build:
+      context: ./Backend/FlowBoard-LabelService
+      dockerfile: Dockerfile
+    container_name: flowboard_label_service
+    ports:
+      - "5007:5007"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5007
+      ConnectionStrings__DefaultConnection: "Host=postgres_label;Port=5432;Database=flowboard_label_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Cors__AllowedOrigins: "http://localhost:4200"
+    depends_on:
+      postgres_label:
+        condition: service_healthy
+    restart: unless-stopped
+
   # --- Frontend (Web Client) ---
   web-client:
     build:
@@ -281,4 +319,8 @@ volumes:
     name: flowboard_postgres_card_data
   postgres_comment_data:
     name: flowboard_postgres_comment_data
+  postgres_label_data:
+    name: flowboard_postgres_label_data
+  rabbitmq_data:
+    name: flowboard_rabbitmq_data
 

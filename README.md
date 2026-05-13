@@ -56,6 +56,15 @@
 - **Overdue Tracking** — identify and surface cards past their deadline
 - **Card Archival** — archive completed or redundant tasks
 
+### UC7 — Label & Checklist Service *(Card Enrichment)*
+- **Board-Scoped Labels** — create, edit, and delete color-coded labels per board
+- **Multi-Label Cards** — assign multiple labels to a single card for categorization
+- **Mini Label Badges** — visual label indicators on Kanban cards for quick scanning
+- **Dynamic Checklists** — add multiple checklists per card with custom titles
+- **Checklist Items** — add, toggle, and delete items within a checklist
+- **Progress Tracking** — automatic calculation of completion percentage per card
+- **Clean Modal Integration** — seamless labels and checklist management in the card detail modal
+
 ### UC6 — Comment & Attachment Service *(Collaboration)*
 - **Threaded Comments** — two-level threading via `ParentCommentId` (nullable for top-level)
 - **Soft-Delete Moderation** — `IsDeleted` flag via EF Core query filters preserves history
@@ -99,11 +108,15 @@ FlowBoard follows a **Database-per-Service** microservice pattern with event-dri
 │  │  Port 5435  │  │  Port 5436   │  │  Port 5437    │  │
 │  └─────────────┘  └──────────────┘  └───────┬───────┘  │
 │                                              │           │
-│                                      ┌───────▼───────┐  │
-│                                      │   RabbitMQ    │  │
-│                                      │  Port 5672    │  │
-│                                      └───────────────┘  │
-└─────────────────────────────────────────────────────────┘
+│  ┌─────────────┐  ┌──────────────┐  ┌────────▼───────┐  │
+│  │Label Service│  │  PostgreSQL  │  │   RabbitMQ    │  │
+│  │  Port 5007  │  │  Port 5438   │  │  Port 5672    │  │
+│  └──────┬──────┘  └──────────────┘  └───────────────┘  │
+│         │                                               │
+└─────────┼───────────────────────────────────────────────┘
+          │
+          ▼
+    [Card Enrichment]
 ```
 
 ### Service Map
@@ -116,6 +129,7 @@ FlowBoard follows a **Database-per-Service** microservice pattern with event-dri
 | List Service | `5004` | `5435` | Columns, ordering, archive |
 | Card Service | `5005` | `5436` | Tasks, assignments, lifecycle |
 | Comment & Attachment Service | `5006` | `5437` | Collaboration, file links |
+| Label & Checklist Service | `5007` | `5438` | Labels, checklists, progress |
 | Frontend (Angular SPA) | `4200` | — | Unified UI client |
 | RabbitMQ Management UI | `15672` | — | Message broker dashboard |
 
@@ -164,6 +178,8 @@ Once healthy, open:
 |---|---|
 | **FlowBoard App** | http://localhost:4200 |
 | **Auth API Swagger** | http://localhost:5001/swagger |
+| **Card API Swagger** | http://localhost:5005/swagger |
+| **Label API Swagger** | http://localhost:5007/swagger |
 | **Comment API Swagger** | http://localhost:5006/swagger |
 | **RabbitMQ Dashboard** | http://localhost:15672 *(guest / guest)* |
 
@@ -173,7 +189,7 @@ Once healthy, open:
 
 **Step 1** — Start infrastructure containers:
 ```bash
-docker-compose up -d postgres postgres_workspace postgres_board postgres_list postgres_card postgres_comment rabbitmq
+docker-compose up -d postgres postgres_workspace postgres_board postgres_list postgres_card postgres_comment postgres_label rabbitmq
 ```
 
 **Step 2** — Run backend services (each in a separate terminal):
@@ -210,6 +226,7 @@ Every service exposes an interactive Swagger UI in `Development` mode:
 | List | http://localhost:5004/swagger |
 | Card | http://localhost:5005/swagger |
 | Comment & Attachment | http://localhost:5006/swagger |
+| Label & Checklist | http://localhost:5007/swagger |
 
 ### Core Endpoints
 
@@ -232,6 +249,18 @@ Every service exposes an interactive Swagger UI in `Development` mode:
 | `POST` | `/api/attachments` | Link a file attachment |
 | `GET` | `/api/attachments/card/{cardId}` | Get attachments for a card |
 | `DELETE` | `/api/attachments/{id}` | Delete an attachment |
+
+#### Label & Checklist Service (UC7)
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/label` | Create a board label |
+| `GET` | `/api/label/board/{boardId}` | Get labels for a board |
+| `POST` | `/api/label/card/{cardId}/label/{labelId}` | Add label to card |
+| `DELETE` | `/api/label/card/{cardId}/label/{labelId}` | Remove label from card |
+| `POST` | `/api/checklist` | Create a checklist on a card |
+| `POST` | `/api/checklist/{id}/item` | Add item to checklist |
+| `PUT` | `/api/checklist/item/{itemId}/toggle` | Toggle item completion |
+| `GET` | `/api/checklist/card/{cardId}/progress` | Get completion percentage |
 
 #### Card Service (UC5)
 | Method | Endpoint | Description |
@@ -263,22 +292,19 @@ FlowBoard/
 │   ├── FlowBoard-ListService/             # UC4 — Column/List Service
 │   ├── FlowBoard-CardService/             # UC5 — Task/Card Service
 │   ├── FlowBoard-Comment_AttachmentService/ # UC6 — Comments & Attachments
+│   │   ├── ...
+│   │   └── Dockerfile
+│   ├── FlowBoard-LabelService/            # UC7 — Labels & Checklists
 │   │   ├── Controllers/
-│   │   │   └── CommentController.cs       # CommentsController + AttachmentsController
-│   │   ├── Models/
-│   │   │   ├── Comment.cs                 # ParentCommentId threading, IsDeleted soft-delete
-│   │   │   └── Attachment.cs              # FileUrl, FileType, SizeKb, UploadedAt
-│   │   ├── Repositories/
-│   │   │   └── ICommentRepository.cs
 │   │   ├── Services/
-│   │   │   ├── ICommentService.cs
-│   │   │   └── CommentServiceImpl.cs      # MassTransit publish on add
+│   │   ├── Models/
 │   │   ├── Data/
-│   │   │   └── CommentDbContext.cs        # EF Core query filter for IsDeleted
+│   │   ├── Migrations/                    # EF Core Migrations
 │   │   └── Dockerfile
 │   └── test/
 │       ├── FlowBoard-CommentService.Tests/ # UC6 unit tests (xUnit + Moq)
 │       ├── FlowBoard-CardService.Tests/    # UC5 unit tests
+│       ├── FlowBoard-LabelService.Tests/   # UC7 unit tests
 │       ├── auth-tests/
 │       ├── board-tests/
 │       ├── list-tests/
@@ -291,16 +317,18 @@ FlowBoard/
 │       │   ├── board-list/                # Board grid view
 │       │   └── board-detail/              # Full Kanban board + card modal
 │       ├── services/
-│       │   ├── auth.service.ts            # JWT + Signal state
+│       │   ├── auth.service.ts
 │       │   ├── board.service.ts
 │       │   ├── list.service.ts
 │       │   ├── card.service.ts
-│       │   └── comment.service.ts         # UC6 comment + attachment API client
+│       │   ├── comment.service.ts
+│       │   └── label.service.ts           # UC7 label + checklist API client
 │       └── models/
 │           ├── auth.models.ts
 │           ├── board.models.ts
 │           ├── card.models.ts
-│           └── comment.models.ts          # Comment, Attachment, CreateCommentDto
+│           ├── comment.models.ts
+│           └── label.models.ts            # UC7 label + checklist models
 ├── docker-compose.yml                     # Full stack orchestration
 ├── Sprint.sln                             # .NET solution file
 └── README.md
@@ -335,6 +363,7 @@ ng test --watch=false --browsers=ChromeHeadless
 | List Service | `list-tests` | xUnit + Moq |
 | Card Service | `FlowBoard-CardService.Tests` | xUnit + Moq |
 | Comment & Attachment | `FlowBoard-CommentService.Tests` | xUnit + Moq |
+| Label & Checklist | `FlowBoard-LabelService.Tests` | xUnit + Moq |
 
 ---
 
@@ -359,8 +388,8 @@ ng test --watch=false --browsers=ChromeHeadless
 - [x] **UC4** — Kanban Board, List/Column Management, Archive, Drag-and-Drop
 - [x] **UC5** — Task Card Lifecycle (CRUD, Assignments, Priority, Status)
 - [x] **UC6** — Comments & Attachments (Threaded, Soft-delete, Event-driven)
-- [ ] **UC7** — Real-time Collaboration (WebSockets / SignalR)
-- [ ] **UC8** — Card Labels & Tagging System
+- [x] **UC7** — Card Labels & Checklist System (Progress tracking)
+- [ ] **UC8** — Real-time Collaboration (WebSockets / SignalR)
 - [ ] **UC9** — Activity Log & Audit Trail
 - [ ] **UC10** — Due Date Reminders & Notifications Inbox
 - [ ] **UC11** — Board Templates
