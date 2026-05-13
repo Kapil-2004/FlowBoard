@@ -105,6 +105,15 @@
                   <div class="card-labels" *ngIf="card.priority">
                     <span class="priority-label" [class]="card.priority.toLowerCase()">{{ card.priority }}</span>
                   </div>
+                  <div class="card-visual-labels">
+                    <ng-container *ngFor="let label of boardLabels()">
+                      <span class="mini-label"
+                            *ngIf="isLabelOnCardById(card.cardId, label.labelId)"
+                            [style.background]="label.color"
+                            [title]="label.name">
+                      </span>
+                    </ng-container>
+                  </div>
                   <h4 class="card-title" (click)="openCard(card); $event.stopPropagation()">{{ card.title }}</h4>
                   <div class="card-badges">
                     <span class="badge" title="View Details" (click)="openCard(card); $event.stopPropagation()">
@@ -322,8 +331,59 @@
     <div class="card-body-layout">
       <div class="card-main">
         <section class="card-section">
+          <h3>Labels</h3>
+          <div class="modal-labels-list">
+             <div class="label-pill" *ngFor="let label of boardLabels()" 
+                  [style.background]="label.color"
+                  [class.selected]="isLabelOnCard(label.labelId)"
+                  (click)="onToggleLabelOnCard(label)">
+               {{ label.name }}
+               <span class="check-icon" *ngIf="isLabelOnCard(label.labelId)">✓</span>
+             </div>
+             <button class="add-label-pill" (click)="showLabelManager = true">+ Add/Edit Labels</button>
+          </div>
+        </section>
+
+        <section class="card-section">
           <h3>Description</h3>
           <textarea class="card-desc-input" [(ngModel)]="selectedCard.description" placeholder="Add a more detailed description..." (blur)="updateCardDetails()"></textarea>
+        </section>
+
+        <section class="card-section">
+          <div class="section-header">
+            <h3>Checklists</h3>
+            <span class="progress-pct" *ngIf="cardChecklists.length > 0">{{ checklistProgress }}%</span>
+          </div>
+          
+          <div class="progress-bar-container" *ngIf="cardChecklists.length > 0">
+            <div class="progress-bar-fill" [style.width.%]="checklistProgress"></div>
+          </div>
+
+          <div class="checklists-container">
+            <div class="checklist-group" *ngFor="let cl of cardChecklists">
+              <div class="checklist-header">
+                <h4>{{ cl.title }}</h4>
+                <button class="danger-btn-text-sm" (click)="onDeleteChecklist(cl.checklistId)">Delete</button>
+              </div>
+              <div class="checklist-items">
+                <div class="checklist-item" *ngFor="let item of cl.items" (click)="onToggleChecklistItem(item)">
+                  <div class="check-box" [class.checked]="item.isCompleted">
+                    <span *ngIf="item.isCompleted">✓</span>
+                  </div>
+                  <span class="item-text" [class.strikethrough]="item.isCompleted">{{ item.text }}</span>
+                </div>
+                <div class="add-item-row">
+                  <input type="text" [(ngModel)]="newItemText[cl.checklistId]" placeholder="Add an item..." 
+                         (keyup.enter)="onAddChecklistItem(cl.checklistId)" class="item-input" />
+                  <button class="btn-solid-sm" (click)="onAddChecklistItem(cl.checklistId)">Add</button>
+                </div>
+              </div>
+            </div>
+            <div class="add-checklist-area">
+              <input type="text" [(ngModel)]="newChecklistTitle" placeholder="Checklist title..." class="att-input" />
+              <button class="btn-solid-sm" (click)="onCreateChecklist()">Add Checklist</button>
+            </div>
+          </div>
         </section>
 
         <section class="card-section">
@@ -392,6 +452,40 @@
 
          <h4 class="sidebar-title">Actions</h4>
          <button class="sidebar-btn danger" (click)="onDeleteCard()">🗑️ Delete Card</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Label Manager Modal -->
+<div class="modal-overlay" *ngIf="showLabelManager" (click)="showLabelManager = false">
+  <div class="modal-surface move-panel" (click)="$event.stopPropagation()">
+    <header class="modal-header">
+      <h2>Manage Board Labels</h2>
+      <button class="close-btn" (click)="showLabelManager = false">×</button>
+    </header>
+
+    <div class="label-creation-form">
+      <div class="input-group">
+        <label>Label Name</label>
+        <input type="text" [(ngModel)]="newLabel.name" placeholder="Label name..." (keyup.enter)="onCreateLabel()" />
+      </div>
+      <div class="input-group">
+        <label>Color</label>
+        <div class="color-picker-custom">
+          <input type="color" [(ngModel)]="newLabel.color" />
+          <code>{{ newLabel.color }}</code>
+        </div>
+      </div>
+      <button class="btn-solid" (click)="onCreateLabel()" [disabled]="!newLabel.name.trim()">Create Label</button>
+    </div>
+
+    <div class="existing-labels-list">
+      <h3>Existing Labels</h3>
+      <div class="label-item-manage" *ngFor="let label of boardLabels()">
+        <div class="label-preview" [style.background]="label.color"></div>
+        <span class="label-name-manage">{{ label.name }}</span>
+        <button class="delete-sm-btn" (click)="deleteLabel(label.labelId)">🗑️</button>
       </div>
     </div>
   </div>

@@ -34,8 +34,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - BCrypt password hashing
   - User profile management
 
+- **UC7 — Label & Checklist Service** (Port 5007)
+  - Board-scoped color-coded labels
+  - Multi-label card enrichment with board tile indicators
+  - Card-scoped checklists with multiple items and completion flags
+  - Real-time progress computation for checklists (percentage calculation)
+  - Comprehensive unit test suite for labels and checklists
+
 ### Infrastructure
-- Docker Compose with 6 independent PostgreSQL instances
+- Docker Compose with 7 independent PostgreSQL instances
 - RabbitMQ for async event messaging
 - Nginx-served Angular production build in Docker
 
@@ -44,7 +51,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Planned
-- UC7: Real-time collaboration via SignalR / WebSockets
-- UC8: Card labels and tagging
+- UC8: Real-time collaboration via SignalR / WebSockets
 - UC9: Activity log and audit trail
+- UC10: Due Date Reminders & Notifications Inbox
+- UC11: Board Templates
 - UC12: Full-text search across cards and comments

@@ -12,6 +12,8 @@ import { CardDto, CreateCardDto, UpdateCardDto, MoveCardDto } from '../../models
 import { CommentService } from '../../services/comment.service';
 import { Comment, Attachment, CreateCommentDto } from '../../models/comment.models';
 import { AuthService } from '../../services/auth.service';
+import { LabelService } from '../../services/label.service';
+import { Label, Checklist, ChecklistItem } from '../../models/label.models';
 
 @Component({
   selector: 'app-board-detail',
@@ -26,6 +28,7 @@ export class BoardDetailComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private cardService = inject(CardService);
   private commentService = inject(CommentService);
+  private labelService = inject(LabelService);
   private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
@@ -69,6 +72,17 @@ export class BoardDetailComponent implements OnInit {
   newAttachmentUrl = '';
   newAttachmentName = '';
 
+  // Label & Checklist
+  boardLabels = signal<Label[]>([]);
+  cardLabels: Label[] = [];                          // labels for the currently-open card
+  cardLabelsMap: Record<number, Label[]> = {};        // cardId → labels, for board-view badges
+  cardChecklists: Checklist[] = [];
+  checklistProgress = 0;
+  showLabelManager = false;
+  newLabel = { name: '', color: '#6366F1' };
+  newChecklistTitle = '';
+  newItemText: Record<number, string> = {};
+
   // Card Drag & Drop
   draggedCard: CardDto | null = null;
 
@@ -94,6 +108,7 @@ export class BoardDetailComponent implements OnInit {
         this.board.set(board);
         this.editBoard = { ...board };
         this.loadLists(boardId);
+        this.loadBoardLabels(boardId);
       },
       error: () => this.notificationService.error('Failed to load board details')
     });
@@ -121,7 +136,19 @@ export class BoardDetailComponent implements OnInit {
           grouped[card.listId].push(card);
         }
         this.cardsByList.set(grouped);
+        // Pre-load labels for every card so board-view badges work
+        this.loadAllCardLabels(cards.map(c => c.cardId));
       }
+    });
+  }
+
+  loadAllCardLabels(cardIds: number[]) {
+    cardIds.forEach(cardId => {
+      this.labelService.getLabelsForCard(cardId).subscribe({
+        next: labels => {
+          this.cardLabelsMap = { ...this.cardLabelsMap, [cardId]: labels };
+        }
+      });
     });
   }
 
@@ -363,6 +390,9 @@ export class BoardDetailComponent implements OnInit {
     this.selectedCard = null;
     this.cardComments = [];
     this.cardAttachments = [];
+    this.cardLabels = [];
+    this.cardChecklists = [];
+    this.checklistProgress = 0;
   }
 
   loadCardDetails() {
@@ -375,6 +405,21 @@ export class BoardDetailComponent implements OnInit {
     
     this.commentService.getAttachmentsByCard(cardId).subscribe({
       next: atts => this.cardAttachments = atts
+    });
+
+    this.labelService.getLabelsForCard(cardId).subscribe({
+      next: labels => {
+        this.cardLabels = labels;
+        // also update map so board badges stay in sync
+        this.cardLabelsMap = { ...this.cardLabelsMap, [cardId]: labels };
+      }
+    });
+
+    this.labelService.getChecklistsByCard(cardId).subscribe({
+      next: checklists => {
+        this.cardChecklists = checklists;
+        this.updateChecklistProgress();
+      }
     });
   }
 
@@ -448,6 +493,131 @@ export class BoardDetailComponent implements OnInit {
           }
        });
     }
+  }
+
+  // ── Label & Checklist Management ────────────────────────────────────────────
+  loadBoardLabels(boardId: number) {
+    this.labelService.getLabelsByBoard(boardId).subscribe({
+      next: labels => this.boardLabels.set(labels)
+    });
+  }
+
+  onCreateLabel() {
+    if (!this.newLabel.name.trim()) return;
+    this.labelService.createLabel({
+      boardId: this.board()!.boardId,
+      name: this.newLabel.name,
+      color: this.newLabel.color
+    }).subscribe({
+      next: label => {
+        this.boardLabels.set([...this.boardLabels(), label]);
+        this.newLabel.name = '';
+      }
+    });
+  }
+
+  deleteLabel(labelId: number) {
+    if (confirm('Delete this label permanently from the board?')) {
+      this.labelService.deleteLabel(labelId).subscribe({
+        next: () => {
+          this.boardLabels.set(this.boardLabels().filter(l => l.labelId !== labelId));
+          this.cardLabels = this.cardLabels.filter(l => l.labelId !== labelId);
+        }
+      });
+    }
+  }
+
+  onToggleLabelOnCard(label: Label) {
+    if (!this.selectedCard) return;
+    const cardId = this.selectedCard.cardId;
+    const isAttached = this.cardLabels.some(l => l.labelId === label.labelId);
+    if (isAttached) {
+      this.labelService.removeLabelFromCard(cardId, label.labelId).subscribe({
+        next: () => {
+          this.cardLabels = this.cardLabels.filter(l => l.labelId !== label.labelId);
+          this.cardLabelsMap = { ...this.cardLabelsMap, [cardId]: this.cardLabels };
+        }
+      });
+    } else {
+      this.labelService.addLabelToCard(cardId, label.labelId).subscribe({
+        next: () => {
+          this.cardLabels = [...this.cardLabels, label];
+          this.cardLabelsMap = { ...this.cardLabelsMap, [cardId]: this.cardLabels };
+        }
+      });
+    }
+  }
+
+  onCreateChecklist() {
+    if (!this.selectedCard || !this.newChecklistTitle.trim()) return;
+    this.labelService.createChecklist({
+      cardId: this.selectedCard.cardId,
+      title: this.newChecklistTitle,
+      position: this.cardChecklists.length
+    }).subscribe({
+      next: checklist => {
+        this.cardChecklists = [...this.cardChecklists, checklist];
+        this.newChecklistTitle = '';
+        this.updateChecklistProgress();
+      }
+    });
+  }
+
+  onAddChecklistItem(checklistId: number) {
+    const text = this.newItemText[checklistId];
+    if (!text?.trim()) return;
+    this.labelService.addItem(checklistId, { text, isCompleted: false }).subscribe({
+      next: updatedChecklist => {
+        const idx = this.cardChecklists.findIndex(c => c.checklistId === checklistId);
+        if (idx !== -1) {
+          const newChecklists = [...this.cardChecklists];
+          newChecklists[idx] = updatedChecklist;
+          this.cardChecklists = newChecklists;
+        }
+        this.newItemText[checklistId] = '';
+        this.updateChecklistProgress();
+      }
+    });
+  }
+
+  onToggleChecklistItem(item: ChecklistItem) {
+    this.labelService.toggleItem(item.itemId).subscribe({
+      next: updatedItem => {
+        item.isCompleted = updatedItem.isCompleted;
+        this.updateChecklistProgress();
+      }
+    });
+  }
+
+  onDeleteChecklist(checklistId: number) {
+    if (confirm('Delete this checklist?')) {
+      this.labelService.deleteChecklist(checklistId).subscribe({
+        next: () => {
+          this.cardChecklists = this.cardChecklists.filter(c => c.checklistId !== checklistId);
+          this.updateChecklistProgress();
+        }
+      });
+    }
+  }
+
+  updateChecklistProgress() {
+    const allItems = this.cardChecklists.flatMap(c => c.items);
+    if (allItems.length === 0) {
+      this.checklistProgress = 0;
+      return;
+    }
+    const completed = allItems.filter(i => i.isCompleted).length;
+    this.checklistProgress = Math.round((completed / allItems.length) * 100);
+  }
+
+  /** Used inside the card modal (selectedCard context) */
+  isLabelOnCard(labelId: number): boolean {
+    return this.cardLabels.some(l => l.labelId === labelId);
+  }
+
+  /** Used on the board Kanban card tiles */
+  isLabelOnCardById(cardId: number, labelId: number): boolean {
+    return (this.cardLabelsMap[cardId] || []).some(l => l.labelId === labelId);
   }
 
   onAddAttachment() {
