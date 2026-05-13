@@ -109,6 +109,24 @@
 .empty-state-card p { font-size: 12px; font-weight: 600; margin: 0; }
 .empty-state-card span { font-size: 10px; }
 
+/* ── Task Cards ───────────────────────────────────────────────────────────── */
+.task-card { background: #1a1a1a; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; margin-bottom: 8px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+.task-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); }
+.card-cover { height: 32px; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.card-content { padding: 12px; }
+.card-labels { margin-bottom: 8px; display: flex; gap: 4px; }
+.priority-label { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.priority-label.low { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+.priority-label.medium { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+.priority-label.high { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+.priority-label.critical { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+.card-title { font-size: 13px; font-weight: 500; color: #ddd; margin: 0; line-height: 1.4; }
+
+.add-card-form { margin-top: 8px; }
+.add-card-form textarea { width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px; border-radius: 6px; font-family: inherit; font-size: 13px; outline: none; resize: vertical; min-height: 60px; margin-bottom: 8px; transition: border-color 0.15s; }
+.add-card-form textarea:focus { border-color: rgba(255,255,255,0.3); }
+.add-card-actions { display: flex; gap: 8px; align-items: center; }
+
 .create-task-btn { padding: 12px; text-align: left; font-size: 13px; color: #888; border-radius: 0 0 12px 12px; border-top: 1px solid rgba(255,255,255,0.03); background: none; border-left: none; border-right: none; border-bottom: none; cursor: pointer; font-family: inherit; transition: all 0.15s; width: 100%; }
 .create-task-btn:hover { background: rgba(255,255,255,0.02); color: #fff; }
 
