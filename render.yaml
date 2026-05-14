@@ -1,61 +1,15 @@
+databases:
+  - name: flowboard-db
+    databaseName: flowboard
+    user: postgres
+    plan: free
+
 services:
-  # --- Databases ---
-  # Note: Render Free tier allows only ONE free database per account.
-  # For a full microservice deployment, you may need a paid plan or 
-  # consolidate these into one database instance with different schemas.
-  - type: database
-    name: auth-db
-    databaseName: flowboard_auth
-    user: postgres
-    plan: free
-
-  - type: database
-    name: workspace-db
-    databaseName: flowboard_workspace
-    user: postgres
-    plan: free
-
-  - type: database
-    name: board-db
-    databaseName: flowboard_board
-    user: postgres
-    plan: free
-
-  - type: database
-    name: list-db
-    databaseName: flowboard_list
-    user: postgres
-    plan: free
-
-  - type: database
-    name: card-db
-    databaseName: flowboard_card
-    user: postgres
-    plan: free
-
-  - type: database
-    name: comment-db
-    databaseName: flowboard_comment
-    user: postgres
-    plan: free
-
-  - type: database
-    name: label-db
-    databaseName: flowboard_label
-    user: postgres
-    plan: free
-
-  - type: database
-    name: notification-db
-    databaseName: flowboard_notification
-    user: postgres
-    plan: free
-
   # --- Message Broker ---
   - type: pserv
     name: rabbitmq
     env: docker
-    dockerfile: Dockerfile.rabbitmq # We will create this
+    dockerfile: Dockerfile.rabbitmq
     plan: starter
 
   # --- Backend Services ---
@@ -72,7 +26,7 @@ services:
         value: http://+:5001
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: auth-db
+          name: flowboard-db
           property: connectionString
       - key: Jwt__Secret
         sync: false
@@ -94,7 +48,7 @@ services:
         value: http://+:5002
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: workspace-db
+          name: flowboard-db
           property: connectionString
 
   - type: web
@@ -110,7 +64,7 @@ services:
         value: http://+:5003
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: board-db
+          name: flowboard-db
           property: connectionString
 
   - type: web
@@ -124,7 +78,7 @@ services:
         value: http://+:5004
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: list-db
+          name: flowboard-db
           property: connectionString
 
   - type: web
@@ -138,7 +92,7 @@ services:
         value: http://+:5005
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: card-db
+          name: flowboard-db
           property: connectionString
 
   - type: web
@@ -152,7 +106,7 @@ services:
         value: http://+:5006
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: comment-db
+          name: flowboard-db
           property: connectionString
       - key: RabbitMQ__Host
         value: rabbitmq
@@ -168,7 +122,7 @@ services:
         value: http://+:5007
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: label-db
+          name: flowboard-db
           property: connectionString
 
   - type: web
@@ -182,7 +136,7 @@ services:
         value: http://+:5008
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
-          name: notification-db
+          name: flowboard-db
           property: connectionString
       - key: RabbitMQ__Host
         value: rabbitmq
