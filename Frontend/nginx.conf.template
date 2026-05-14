@@ -6,8 +6,8 @@ server {
     index index.html;
 
     # Required for dynamic proxy_pass targets using variables
-    # 169.254.169.253 is Render's internal DNS server
-    resolver 169.254.169.253 8.8.8.8 valid=30s;
+    # Use Docker/Render's internal DNS and disable IPv6 to prevent resolution delays
+    resolver 127.0.0.11 169.254.169.253 8.8.8.8 valid=30s ipv6=off;
 
     # Angular routing support
     location / {
@@ -18,7 +18,7 @@ server {
     # Auth Service handles both /api/auth and /api/admin
     location /api/auth/ {
         set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream:5001/api/auth/;
+        proxy_pass http://$auth_upstream:5001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -26,62 +26,62 @@ server {
 
     location /api/admin/ {
         set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream:5001/api/admin/;
+        proxy_pass http://$auth_upstream:5001;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     location /api/workspaces/ {
         set $workspace_upstream ${WORKSPACE_SERVICE_URL};
-        proxy_pass http://$workspace_upstream:5002/api/workspaces/;
+        proxy_pass http://$workspace_upstream:5002;
         proxy_set_header Host $host;
     }
 
     location /api/boards/ {
         set $board_upstream ${BOARD_SERVICE_URL};
-        proxy_pass http://$board_upstream:5003/api/boards/;
+        proxy_pass http://$board_upstream:5003;
         proxy_set_header Host $host;
     }
 
     location /api/lists/ {
         set $list_upstream ${LIST_SERVICE_URL};
-        proxy_pass http://$list_upstream:5004/api/lists/;
+        proxy_pass http://$list_upstream:5004;
         proxy_set_header Host $host;
     }
 
     location /api/cards/ {
         set $card_upstream ${CARD_SERVICE_URL};
-        proxy_pass http://$card_upstream:5005/api/cards/;
+        proxy_pass http://$card_upstream:5005;
         proxy_set_header Host $host;
     }
 
     location /api/comments/ {
         set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream:5006/api/comments/;
+        proxy_pass http://$comment_upstream:5006;
         proxy_set_header Host $host;
     }
 
     location /api/attachments/ {
         set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream:5006/api/attachments/;
+        proxy_pass http://$comment_upstream:5006;
         proxy_set_header Host $host;
     }
 
     location /api/labels/ {
         set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream:5007/api/label/;
+        proxy_pass http://$label_upstream:5007;
         proxy_set_header Host $host;
     }
 
     location /api/checklist/ {
         set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream:5007/api/checklist/;
+        proxy_pass http://$label_upstream:5007;
         proxy_set_header Host $host;
     }
 
     location /api/notifications/ {
         set $notification_upstream ${NOTIFICATION_SERVICE_URL};
-        proxy_pass http://$notification_upstream:5008/api/notifications/;
+        proxy_pass http://$notification_upstream:5008;
         proxy_set_header Host $host;
         
         # WebSockets for SignalR
