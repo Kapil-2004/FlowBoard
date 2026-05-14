@@ -31,7 +31,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
                        ?? throw new InvalidOperationException("Database connection string not configured.");
 
-if (connectionString.StartsWith("postgres://"))
+if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 {
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');

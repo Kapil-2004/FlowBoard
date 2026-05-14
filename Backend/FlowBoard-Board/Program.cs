@@ -21,7 +21,7 @@ builder.Services.AddControllers()
 
 // DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (connectionString?.StartsWith("postgres://") == true)
+if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 {
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');
