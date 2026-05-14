@@ -52,6 +52,8 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
+connectionString += ";SearchPath=notification";
+
 builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -155,6 +157,7 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<NotificationDbContext>();
+    db.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS notification;");
     db.Database.Migrate();
 }
 

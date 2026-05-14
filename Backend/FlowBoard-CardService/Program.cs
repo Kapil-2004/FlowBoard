@@ -25,6 +25,8 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
+connectionString += ";SearchPath=card";
+
 builder.Services.AddDbContext<CardDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -111,6 +113,7 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<CardDbContext>();
         var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
+        context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS card;");
         if (!databaseCreator.Exists()) databaseCreator.Create();
         try { databaseCreator.CreateTables(); } catch { }
     }

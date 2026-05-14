@@ -25,6 +25,8 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
+connectionString += ";SearchPath=list";
+
 builder.Services.AddDbContext<ListDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -134,9 +136,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ListDbContext>();
-        // EnsureCreated() skips table creation if the DB exists. 
-        // We use the database creator to explicitly create tables if they don't exist.
         var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
+        context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS list;");
         if (!databaseCreator.Exists()) databaseCreator.Create();
         try { databaseCreator.CreateTables(); } catch { /* Tables might already exist */ }
     }

@@ -40,6 +40,8 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
+connectionString += ";SearchPath=auth";
+
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -159,6 +161,7 @@ using (var scope = app.Services.CreateScope())
         var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
         if (db.Database.IsRelational())
         {
+            db.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS auth;");
             db.Database.Migrate();
             app.Logger.LogInformation("Database migration applied successfully.");
         }

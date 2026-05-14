@@ -21,6 +21,8 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
+connectionString += ";SearchPath=workspace";
+
 builder.Services.AddDbContext<FlowBoard_Workspace.Data.WorkspaceDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -105,6 +107,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<FlowBoard_Workspace.Data.WorkspaceDbContext>();
+    db.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS workspace;");
     db.Database.Migrate();
 }
 
