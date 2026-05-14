@@ -6,7 +6,8 @@ server {
     index index.html;
 
     # Required for dynamic proxy_pass targets using variables
-    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    # 169.254.169.253 is Render's internal DNS server
+    resolver 169.254.169.253 8.8.8.8 valid=30s;
 
     # Angular routing support
     location / {
@@ -16,60 +17,60 @@ server {
     # Proxy API requests to microservices
     # Auth Service handles both /api/auth and /api/admin
     location /api/auth/ {
-        proxy_pass https://${AUTH_SERVICE_URL}/api/auth/;
+        proxy_pass http://${AUTH_SERVICE_URL}:10000/api/auth/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     location /api/admin/ {
-        proxy_pass https://${AUTH_SERVICE_URL}/api/admin/;
+        proxy_pass http://${AUTH_SERVICE_URL}:10000/api/admin/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     location /api/workspaces/ {
-        proxy_pass https://${WORKSPACE_SERVICE_URL}/api/workspaces/;
+        proxy_pass http://${WORKSPACE_SERVICE_URL}:10000/api/workspaces/;
         proxy_set_header Host $host;
     }
 
     location /api/boards/ {
-        proxy_pass https://${BOARD_SERVICE_URL}/api/boards/;
+        proxy_pass http://${BOARD_SERVICE_URL}:10000/api/boards/;
         proxy_set_header Host $host;
     }
 
     location /api/lists/ {
-        proxy_pass https://${LIST_SERVICE_URL}/api/lists/;
+        proxy_pass http://${LIST_SERVICE_URL}:10000/api/lists/;
         proxy_set_header Host $host;
     }
 
     location /api/cards/ {
-        proxy_pass https://${CARD_SERVICE_URL}/api/cards/;
+        proxy_pass http://${CARD_SERVICE_URL}:10000/api/cards/;
         proxy_set_header Host $host;
     }
 
     location /api/comments/ {
-        proxy_pass https://${COMMENT_SERVICE_URL}/api/comments/;
+        proxy_pass http://${COMMENT_SERVICE_URL}:10000/api/comments/;
         proxy_set_header Host $host;
     }
 
     location /api/attachments/ {
-        proxy_pass https://${COMMENT_SERVICE_URL}/api/attachments/;
+        proxy_pass http://${COMMENT_SERVICE_URL}:10000/api/attachments/;
         proxy_set_header Host $host;
     }
 
     location /api/labels/ {
-        proxy_pass https://${LABEL_SERVICE_URL}/api/label/;
+        proxy_pass http://${LABEL_SERVICE_URL}:10000/api/label/;
         proxy_set_header Host $host;
     }
 
     location /api/checklist/ {
-        proxy_pass https://${LABEL_SERVICE_URL}/api/checklist/;
+        proxy_pass http://${LABEL_SERVICE_URL}:10000/api/checklist/;
         proxy_set_header Host $host;
     }
 
     location /api/notifications/ {
-        proxy_pass https://${NOTIFICATION_SERVICE_URL}/api/notifications/;
+        proxy_pass http://${NOTIFICATION_SERVICE_URL}:10000/api/notifications/;
         proxy_set_header Host $host;
         
         # WebSockets for SignalR
