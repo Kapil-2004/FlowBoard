@@ -50,7 +50,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=label";
 
 builder.Services.AddDbContext<LabelDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "label")));
 
 // Services
 builder.Services.AddScoped<ILabelService, LabelServiceImpl>();

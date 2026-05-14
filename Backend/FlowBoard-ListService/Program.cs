@@ -28,7 +28,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=list";
 
 builder.Services.AddDbContext<ListDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "list")));
 
 // ── Repositories & Services (UC4) ────────────────────────────────────────────
 builder.Services.AddScoped<IListRepository, ListRepository>();

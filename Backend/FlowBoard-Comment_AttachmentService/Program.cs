@@ -29,7 +29,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=comment";
 
 builder.Services.AddDbContext<CommentDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "comment")));
 
 // ── Repositories & Services ──────────────────────────────────────────────────
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();

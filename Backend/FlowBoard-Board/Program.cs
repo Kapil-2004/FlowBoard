@@ -35,7 +35,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=board";
 
 builder.Services.AddDbContext<BoardDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "board")));
 
 // Repositories & Services
 builder.Services.AddScoped<IBoardRepository, BoardRepository>();

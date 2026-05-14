@@ -24,7 +24,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=workspace";
 
 builder.Services.AddDbContext<FlowBoard_Workspace.Data.WorkspaceDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "workspace")));
 
 // Register Services and Repositories
 builder.Services.AddScoped<FlowBoard_Workspace.Interfaces.IWorkspaceRepository, FlowBoard_Workspace.Repositories.WorkspaceRepository>();

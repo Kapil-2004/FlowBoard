@@ -28,7 +28,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=card";
 
 builder.Services.AddDbContext<CardDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "card")));
 
 // ── Repositories & Services ──────────────────────────────────────────────────
 builder.Services.AddScoped<ICardRepository, CardRepository>();

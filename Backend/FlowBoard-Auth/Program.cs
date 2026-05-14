@@ -43,7 +43,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=auth";
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "auth")));
 
 // ── 3. DI Registrations ────────────────────────────────────────────────
 // Repository (scoped – one per request, tied to DbContext lifetime)

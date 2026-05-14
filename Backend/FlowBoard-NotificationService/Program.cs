@@ -55,7 +55,7 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 connectionString += ";SearchPath=notification";
 
 builder.Services.AddDbContext<NotificationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "notification")));
 
 // ── Repository & Service ─────────────────────────────────────────
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
