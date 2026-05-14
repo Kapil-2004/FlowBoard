@@ -142,42 +142,18 @@ services:
     plan: free
     envVars:
       - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-service
-          property: host
+        value: auth-service
       - key: WORKSPACE_SERVICE_URL
-        fromService:
-          type: web
-          name: workspace-service
-          property: host
+        value: workspace-service
       - key: BOARD_SERVICE_URL
-        fromService:
-          type: web
-          name: board-service
-          property: host
+        value: board-service
       - key: LIST_SERVICE_URL
-        fromService:
-          type: web
-          name: list-service
-          property: host
+        value: list-service
       - key: CARD_SERVICE_URL
-        fromService:
-          type: web
-          name: card-service
-          property: host
+        value: card-service
       - key: COMMENT_SERVICE_URL
-        fromService:
-          type: web
-          name: comment-service
-          property: host
+        value: comment-service
       - key: LABEL_SERVICE_URL
-        fromService:
-          type: web
-          name: label-service
-          property: host
+        value: label-service
       - key: NOTIFICATION_SERVICE_URL
-        fromService:
-          type: web
-          name: notification-service
-          property: host
+        value: notification-service
