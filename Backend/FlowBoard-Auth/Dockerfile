@@ -41,15 +41,10 @@ COPY --from=publish /app/publish .
 USER appuser
 
 # Expose the service port (matches appsettings.json "Urls")
-EXPOSE 5001
+EXPOSE 10000
 
 # Environment variables that can be overridden at runtime:
-#   DB_CONNECTION_STRING – PostgreSQL connection string
-#   JWT__SECRET          – JWT signing secret (note double underscore for nested config)
-#   JWT__ISSUER          – JWT issuer
-#   JWT__AUDIENCE        – JWT audience
-#   ASPNETCORE_ENVIRONMENT – Development | Production
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:5001
+ENV ASPNETCORE_URLS=http://+:10000
 
 ENTRYPOINT ["dotnet", "FlowBoard-Auth.dll"]

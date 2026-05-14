@@ -15,7 +15,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-EXPOSE 5004
-ENV ASPNETCORE_URLS=http://+:5004
+EXPOSE 10000
+ENV ASPNETCORE_URLS=http://+:10000
 
 ENTRYPOINT ["dotnet", "FlowBoard-ListService.dll"]

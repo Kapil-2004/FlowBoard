@@ -15,7 +15,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5001
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -37,7 +37,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5002
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -53,7 +53,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5003
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -67,7 +67,7 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5004
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -81,7 +81,7 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5005
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -95,7 +95,7 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5006
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -111,7 +111,7 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5007
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -125,7 +125,7 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5008
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -142,18 +142,42 @@ services:
     plan: free
     envVars:
       - key: AUTH_SERVICE_URL
-        value: auth-service
+        fromService:
+          type: web
+          name: auth-service
+          property: host
       - key: WORKSPACE_SERVICE_URL
-        value: workspace-service
+        fromService:
+          type: web
+          name: workspace-service
+          property: host
       - key: BOARD_SERVICE_URL
-        value: board-service
+        fromService:
+          type: web
+          name: board-service
+          property: host
       - key: LIST_SERVICE_URL
-        value: list-service
+        fromService:
+          type: web
+          name: list-service
+          property: host
       - key: CARD_SERVICE_URL
-        value: card-service
+        fromService:
+          type: web
+          name: card-service
+          property: host
       - key: COMMENT_SERVICE_URL
-        value: comment-service
+        fromService:
+          type: web
+          name: comment-service
+          property: host
       - key: LABEL_SERVICE_URL
-        value: label-service
+        fromService:
+          type: web
+          name: label-service
+          property: host
       - key: NOTIFICATION_SERVICE_URL
-        value: notification-service
+        fromService:
+          type: web
+          name: notification-service
+          property: host

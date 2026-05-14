@@ -16,7 +16,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Expose port
-EXPOSE 5003
-ENV ASPNETCORE_URLS=http://+:5003
+EXPOSE 10000
+ENV ASPNETCORE_URLS=http://+:10000
 
 ENTRYPOINT ["dotnet", "FlowBoard-Board.dll"]

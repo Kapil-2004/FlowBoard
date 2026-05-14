@@ -13,4 +13,6 @@ RUN dotnet publish "FlowBoard-CardService.csproj" -c Release -o /app/publish /p:
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+EXPOSE 10000
+ENV ASPNETCORE_URLS=http://+:10000
 ENTRYPOINT ["dotnet", "FlowBoard-CardService.dll"]
