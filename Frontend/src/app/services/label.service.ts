@@ -8,8 +8,8 @@ import { Label, Checklist, ChecklistItem, CreateLabelDto, CreateChecklistDto } f
 })
 export class LabelService {
   private http = inject(HttpClient);
-  private labelUrl = 'http://localhost:5007/api/label';
-  private checklistUrl = 'http://localhost:5007/api/checklist';
+  private labelUrl = '/api/label';
+  private checklistUrl = '/api/checklist';
 
   // Labels
   createLabel(dto: CreateLabelDto): Observable<Label> {

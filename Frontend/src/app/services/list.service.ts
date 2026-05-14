@@ -14,7 +14,7 @@ import {
 })
 export class ListService {
   /** FlowBoard-ListService runs on port 5004 */
-  private apiUrl = 'http://localhost:5004/api/lists';
+  private apiUrl = '/api/lists';
 
   constructor(private http: HttpClient) {}
 

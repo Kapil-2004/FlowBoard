@@ -7,8 +7,8 @@ import { Comment, CreateCommentDto, UpdateCommentDto, Attachment } from '../mode
   providedIn: 'root'
 })
 export class CommentService {
-  private commentApiUrl = 'http://localhost:5006/api/comments';
-  private attachmentApiUrl = 'http://localhost:5006/api/attachments';
+  private commentApiUrl = '/api/comments';
+  private attachmentApiUrl = '/api/attachments';
 
   constructor(private http: HttpClient) {}
 

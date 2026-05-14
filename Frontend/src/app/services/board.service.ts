@@ -7,7 +7,7 @@ import { BoardResponseDto, BoardCreateDto, BoardUpdateDto, BoardMemberDto, AddBo
   providedIn: 'root'
 })
 export class BoardService {
-  private apiUrl = 'http://localhost:5003/api/boards';
+  private apiUrl = '/api/boards';
 
   constructor(private http: HttpClient) { }
 

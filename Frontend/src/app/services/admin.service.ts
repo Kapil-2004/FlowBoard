@@ -43,7 +43,7 @@ export interface ActivityReportDto {
   auditSummary: string;
 }
 
-const ADMIN_BASE = 'http://localhost:5001/api/admin';
+const ADMIN_BASE = '/api/admin';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {

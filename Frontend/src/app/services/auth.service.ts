@@ -11,7 +11,7 @@ import {
   ApiResponse,
 } from '../models/auth.models';
 
-const API_BASE = 'http://localhost:5001/api/auth';
+const API_BASE = '/api/auth';
 const TOKEN_KEY = 'fb_token';
 const USER_KEY  = 'fb_user';
 

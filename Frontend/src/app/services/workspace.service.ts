@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { WorkspaceResponseDto, WorkspaceCreateDto, WorkspaceMemberDto } from '../models/workspace.models';
 
-const API_BASE = 'http://localhost:5002/api/workspaces';
+const API_BASE = '/api/workspaces';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {

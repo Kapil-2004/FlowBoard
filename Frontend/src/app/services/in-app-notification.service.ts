@@ -8,7 +8,7 @@ import { AppNotification, CreateNotificationDto, SendBulkDto } from '../models/n
 })
 export class InAppNotificationService {
   private http = inject(HttpClient);
-  private base = 'http://localhost:5008/api/notifications';
+  private base = '/api/notifications';
 
   // ── Reactive state ─────────────────────────────────────────────
   readonly items     = signal<AppNotification[]>([]);

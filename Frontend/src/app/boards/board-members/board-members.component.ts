@@ -372,8 +372,8 @@ export class BoardMembersComponent implements OnInit {
   addRole     = 'MEMBER';
 
   private searchTimer: any;
-  private BOARD_API  = 'http://localhost:5003/api/boards';
-  private AUTH_API   = 'http://localhost:5001/api/auth';
+  private BOARD_API  = '/api/boards';
+  private AUTH_API   = '/api/auth';
 
   private headers(): HttpHeaders {
     return new HttpHeaders({ Authorization: `Bearer ${this.authSvc.getToken()}` });

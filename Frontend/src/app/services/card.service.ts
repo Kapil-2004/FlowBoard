@@ -14,7 +14,7 @@ import {
   providedIn: 'root'
 })
 export class CardService {
-  private apiUrl = 'http://localhost:5005/api/cards';
+  private apiUrl = '/api/cards';
 
   constructor(private http: HttpClient) {}
 
