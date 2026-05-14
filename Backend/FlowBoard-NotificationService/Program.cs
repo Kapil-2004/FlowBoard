@@ -59,11 +59,19 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((ctx, cfg) =>
     {
-        cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq", "/", h =>
+        var rabbitUri = builder.Configuration["RabbitMQ:Uri"];
+        if (!string.IsNullOrEmpty(rabbitUri))
         {
-            h.Username("guest");
-            h.Password("guest");
-        });
+            cfg.Host(new Uri(rabbitUri));
+        }
+        else
+        {
+            cfg.Host(builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq", "/", h =>
+            {
+                h.Username(builder.Configuration["RabbitMQ:Username"] ?? "guest");
+                h.Password(builder.Configuration["RabbitMQ:Password"] ?? "guest");
+            });
+        }
 
         cfg.ReceiveEndpoint("notification-events", e =>
         {

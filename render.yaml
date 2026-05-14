@@ -4,13 +4,6 @@ databases:
     plan: free
 
 services:
-  # --- Message Broker ---
-  - type: pserv
-    name: rabbitmq
-    runtime: docker
-    dockerfilePath: Dockerfile.rabbitmq
-    plan: starter
-
   # --- Backend Services ---
   - type: web
     name: auth-service
@@ -107,8 +100,8 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: RabbitMQ__Host
-        value: rabbitmq
+      - key: RabbitMQ__Uri
+        sync: false
 
   - type: web
     name: label-service
@@ -137,8 +130,8 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: RabbitMQ__Host
-        value: rabbitmq
+      - key: RabbitMQ__Uri
+        sync: false
 
   # --- Frontend Gateway ---
   - type: web
