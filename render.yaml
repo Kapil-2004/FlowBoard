@@ -140,3 +140,44 @@ services:
     rootDir: ./Frontend
     dockerfilePath: Dockerfile
     plan: free
+    envVars:
+      - key: AUTH_SERVICE_URL
+        fromService:
+          type: web
+          name: auth-service
+          property: host
+      - key: WORKSPACE_SERVICE_URL
+        fromService:
+          type: web
+          name: workspace-service
+          property: host
+      - key: BOARD_SERVICE_URL
+        fromService:
+          type: web
+          name: board-service
+          property: host
+      - key: LIST_SERVICE_URL
+        fromService:
+          type: web
+          name: list-service
+          property: host
+      - key: CARD_SERVICE_URL
+        fromService:
+          type: web
+          name: card-service
+          property: host
+      - key: COMMENT_SERVICE_URL
+        fromService:
+          type: web
+          name: comment-service
+          property: host
+      - key: LABEL_SERVICE_URL
+        fromService:
+          type: web
+          name: label-service
+          property: host
+      - key: NOTIFICATION_SERVICE_URL
+        fromService:
+          type: web
+          name: notification-service
+          property: host
