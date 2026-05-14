@@ -8,15 +8,15 @@ services:
   # --- Message Broker ---
   - type: pserv
     name: rabbitmq
-    env: docker
-    dockerfile: Dockerfile.rabbitmq
+    runtime: docker
+    dockerfilePath: Dockerfile.rabbitmq
     plan: starter
 
   # --- Backend Services ---
   - type: web
     name: auth-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-Auth
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-Auth
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -37,8 +37,8 @@ services:
 
   - type: web
     name: workspace-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-Workspace
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-Workspace
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -53,8 +53,8 @@ services:
 
   - type: web
     name: board-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-Board
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-Board
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -69,8 +69,8 @@ services:
 
   - type: web
     name: list-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-ListService
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-ListService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -83,8 +83,8 @@ services:
 
   - type: web
     name: card-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-CardService
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-CardService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -97,8 +97,8 @@ services:
 
   - type: web
     name: comment-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-Comment_AttachmentService
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-Comment_AttachmentService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -113,8 +113,8 @@ services:
 
   - type: web
     name: label-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-LabelService
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-LabelService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -127,8 +127,8 @@ services:
 
   - type: web
     name: notification-service
-    env: docker
-    dockerContextDir: ./Backend/FlowBoard-NotificationService
+    runtime: docker
+    dockerContext: ./Backend/FlowBoard-NotificationService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -144,8 +144,8 @@ services:
   # --- Frontend Gateway ---
   - type: web
     name: flowboard-web
-    env: docker
-    dockerContextDir: ./Frontend
+    runtime: docker
+    dockerContext: ./Frontend
     dockerfilePath: Dockerfile
     plan: free
     domains:
