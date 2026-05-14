@@ -47,7 +47,9 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 {
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');
-    connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+    connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
 builder.Services.AddDbContext<NotificationDbContext>(options =>
