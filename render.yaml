@@ -8,7 +8,7 @@ services:
   - type: web
     name: auth-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-Auth
+    rootDir: ./Backend/FlowBoard-Auth
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -30,7 +30,7 @@ services:
   - type: web
     name: workspace-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-Workspace
+    rootDir: ./Backend/FlowBoard-Workspace
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -46,7 +46,7 @@ services:
   - type: web
     name: board-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-Board
+    rootDir: ./Backend/FlowBoard-Board
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -62,7 +62,7 @@ services:
   - type: web
     name: list-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-ListService
+    rootDir: ./Backend/FlowBoard-ListService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -76,7 +76,7 @@ services:
   - type: web
     name: card-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-CardService
+    rootDir: ./Backend/FlowBoard-CardService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -90,7 +90,7 @@ services:
   - type: web
     name: comment-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-Comment_AttachmentService
+    rootDir: ./Backend/FlowBoard-Comment_AttachmentService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -106,7 +106,7 @@ services:
   - type: web
     name: label-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-LabelService
+    rootDir: ./Backend/FlowBoard-LabelService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -120,7 +120,7 @@ services:
   - type: web
     name: notification-service
     runtime: docker
-    dockerContext: ./Backend/FlowBoard-NotificationService
+    rootDir: ./Backend/FlowBoard-NotificationService
     dockerfilePath: Dockerfile
     plan: free
     envVars:
@@ -137,6 +137,6 @@ services:
   - type: web
     name: flowboard-web
     runtime: docker
-    dockerContext: ./Frontend
+    rootDir: ./Frontend
     dockerfilePath: Dockerfile
     plan: free
