@@ -20,8 +20,16 @@ builder.Services.AddControllers()
     });
 
 // DbContext
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (connectionString?.StartsWith("postgres://") == true)
+{
+    var databaseUri = new Uri(connectionString);
+    var userInfo = databaseUri.UserInfo.Split(':');
+    connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+
 builder.Services.AddDbContext<BoardDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Repositories & Services
 builder.Services.AddScoped<IBoardRepository, BoardRepository>();
