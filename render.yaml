@@ -140,5 +140,3 @@ services:
     dockerContext: ./Frontend
     dockerfilePath: Dockerfile
     plan: free
-    domains:
-      - flowboard.onrender.com # Change to your actual domain
