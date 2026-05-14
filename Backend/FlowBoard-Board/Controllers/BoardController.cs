@@ -164,6 +164,24 @@ namespace FlowBoard_Board.Controllers
             }
         }
 
+        // --- Admin Endpoints ---
+
+        [HttpGet("all")]
+        [Authorize(Roles = "PlatformAdmin")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _boardService.GetAllBoardsAsync();
+            return Ok(result);
+        }
+
+        [HttpDelete("admin/{id}")]
+        [Authorize(Roles = "PlatformAdmin")]
+        public async Task<IActionResult> AdminDelete(int id)
+        {
+            await _boardService.AdminDeleteBoardAsync(id);
+            return NoContent();
+        }
+
         // Member Endpoints
         [HttpPost("{id}/members")]
         public async Task<IActionResult> AddMember(int id, [FromBody] AddBoardMemberDto addDto)

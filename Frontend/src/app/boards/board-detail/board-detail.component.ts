@@ -14,11 +14,13 @@ import { Comment, Attachment, CreateCommentDto } from '../../models/comment.mode
 import { AuthService } from '../../services/auth.service';
 import { LabelService } from '../../services/label.service';
 import { Label, Checklist, ChecklistItem } from '../../models/label.models';
+import { NotificationBellComponent } from '../../notifications/notification-bell/notification-bell.component';
+import { BoardMembersComponent } from '../board-members/board-members.component';
 
 @Component({
   selector: 'app-board-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NotificationBellComponent, BoardMembersComponent],
   templateUrl: './board-detail.component.html',
   styleUrls: ['./board-detail.component.css']
 })
@@ -43,6 +45,7 @@ export class BoardDetailComponent implements OnInit {
   sidebarCollapsed = true;
   showArchivedPanel = false;
   showMoveModal = false;
+  showMembersPanel = false;
 
   editBoard: BoardUpdateDto = { name: '', description: '', background: '', visibility: '' };
   newList: CreateListDto = { boardId: 0, name: '', color: '#6366F1' };
@@ -94,6 +97,8 @@ export class BoardDetailComponent implements OnInit {
     }
     return 1;
   }
+
+  closeMembersPanel() { this.showMembersPanel = false; }
 
   ngOnInit() {
     this.loadBoard();

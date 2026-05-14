@@ -123,6 +123,23 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres_notification:
+    image: postgres:16-alpine
+    container_name: flowboard_notification_db
+    environment:
+      POSTGRES_DB: flowboard_notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres_notification_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowboard_notification_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: flowboard_rabbitmq
@@ -289,6 +306,32 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # --- Backend (Notification Service) ---
+  notification-service:
+    build:
+      context: ./Backend/FlowBoard-NotificationService
+      dockerfile: Dockerfile
+    container_name: flowboard_notification_service
+    ports:
+      - "5008:5008"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5008
+      ConnectionStrings__DefaultConnection: "Host=postgres_notification;Port=5432;Database=flowboard_notification_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!"
+      Jwt__Issuer: "FlowBoard.Auth"
+      Jwt__Audience: "FlowBoard.Client"
+      Cors__AllowedOrigins: "http://localhost:4200"
+      RabbitMQ__Host: "rabbitmq"
+      SendGrid__ApiKey: ""
+      SendGrid__FromEmail: "noreply@flowboard.app"
+    depends_on:
+      postgres_notification:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
   # --- Frontend (Web Client) ---
   web-client:
     build:
@@ -304,6 +347,8 @@ services:
       - list-service
       - card-service
       - comment-service
+      - label-service
+      - notification-service
     restart: unless-stopped
 
 volumes:
@@ -321,6 +366,8 @@ volumes:
     name: flowboard_postgres_comment_data
   postgres_label_data:
     name: flowboard_postgres_label_data
+  postgres_notification_data:
+    name: flowboard_postgres_notification_data
   rabbitmq_data:
     name: flowboard_rabbitmq_data
 

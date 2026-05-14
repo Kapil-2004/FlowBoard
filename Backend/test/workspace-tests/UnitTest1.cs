@@ -1,4 +1,4 @@
-﻿namespace workspace_tests;
+namespace workspace_tests;
 
 public class UnitTest1
 {

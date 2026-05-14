@@ -221,6 +221,18 @@ namespace FlowBoard_Board.Services
             }).ToList();
         }
 
+        // Admin Methods
+        public async Task<List<BoardDto>> GetAllBoardsAsync()
+        {
+            var boards = await _repository.FindAllAsync();
+            return boards.Select(MapToDto).ToList();
+        }
+
+        public async Task AdminDeleteBoardAsync(int id)
+        {
+            await _repository.DeleteBoardAsync(id);
+        }
+
         private bool IsAdminOrCreator(Board board, Guid userId)
         {
             if (board.CreatedById == userId) return true;

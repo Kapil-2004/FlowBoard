@@ -133,6 +133,26 @@ namespace FlowBoard_Workspace.Controllers
             }
         }
 
+        // --- Admin Endpoints ---
+
+        [HttpGet("all")]
+        [Authorize(Roles = "PlatformAdmin")]
+        public async Task<IActionResult> GetAll()
+        {
+            // For simplicity, we'll use a new method in service or just fetch by a system user
+            // But here we can just call the repository directly or a service method
+            var result = await _workspaceService.GetAllAsync(); 
+            return Ok(result);
+        }
+
+        [HttpDelete("admin/{id}")]
+        [Authorize(Roles = "PlatformAdmin")]
+        public async Task<IActionResult> AdminDelete(int id)
+        {
+            await _workspaceService.AdminDeleteWorkspaceAsync(id);
+            return NoContent();
+        }
+
         // --- Membership Endpoints ---
 
         [HttpPost("{workspaceId}/members")]

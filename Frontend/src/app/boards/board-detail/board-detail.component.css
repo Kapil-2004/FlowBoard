@@ -721,3 +721,37 @@
 
 .danger-btn-text-sm { color: #ef4444; background: none; border: none; font-size: 12px; cursor: pointer; font-weight: 600; padding: 0; }
 .add-checklist-area { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+/* -- Board Members Slide Panel ------------------------------- */
+.members-slide {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  z-index: 300;
+  padding: 16px;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.add-member-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-member-btn:hover,
+.add-member-btn.active {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}

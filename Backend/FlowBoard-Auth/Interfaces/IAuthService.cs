@@ -3,37 +3,28 @@ using FlowBoard.Auth.DTOs;
 namespace FlowBoard.Auth.Interfaces
 {
     /// <summary>
-    /// Core authentication operations: register, login, profile management, and user search.
+    /// Core authentication operations: register, login, profile management, user search,
+    /// and admin-level user management (suspend, reactivate, role change).
     /// </summary>
     public interface IAuthService
     {
-        /// <summary>
-        /// Registers a new user with email/password.
-        /// Throws InvalidOperationException if email is already taken.
-        /// </summary>
+        // ── Auth ────────────────────────────────────────────────────────────
         Task<AuthResponseDto> RegisterAsync(RegisterDto dto);
-
-        /// <summary>
-        /// Validates credentials and returns a JWT.
-        /// Throws UnauthorizedAccessException on invalid credentials.
-        /// </summary>
         Task<AuthResponseDto> LoginAsync(LoginDto dto);
 
-        /// <summary>
-        /// Returns the public profile of the currently authenticated user.
-        /// </summary>
+        // ── Profile ─────────────────────────────────────────────────────────
         Task<UserDto> GetProfileAsync(Guid userId);
-
-        /// <summary>
-        /// Updates mutable profile fields (FullName, AvatarUrl).
-        /// Returns the updated profile.
-        /// </summary>
         Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
 
-        /// <summary>
-        /// Full-text search across FullName and Email.
-        /// Used by other services (e.g. workspace member search).
-        /// </summary>
+        // ── Search ──────────────────────────────────────────────────────────
         Task<IEnumerable<UserDto>> SearchUsersAsync(string query);
+
+        // ── Admin: user management ───────────────────────────────────────────
+        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<UserDto> GetUserByIdAsync(Guid userId);
+        Task<UserDto> ChangeRoleAsync(Guid userId, string newRole);
+        Task<UserDto> SuspendUserAsync(Guid userId);
+        Task<UserDto> ReactivateUserAsync(Guid userId);
+        Task DeleteUserAsync(Guid userId);
     }
 }

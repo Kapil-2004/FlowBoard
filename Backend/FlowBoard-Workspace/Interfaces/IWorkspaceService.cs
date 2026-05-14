@@ -18,5 +18,9 @@ namespace FlowBoard_Workspace.Interfaces
         Task RemoveMemberAsync(int workspaceId, Guid userIdToRemove, Guid requestingUserId);
         Task UpdateMemberRoleAsync(int workspaceId, Guid memberUserId, string newRole, Guid requestingUserId);
         Task<IEnumerable<WorkspaceMemberDto>> GetMembersAsync(int workspaceId, Guid requestingUserId);
+        
+        // Admin Methods
+        Task<IEnumerable<WorkspaceResponseDto>> GetAllAsync();
+        Task AdminDeleteWorkspaceAsync(int id);
     }
 }

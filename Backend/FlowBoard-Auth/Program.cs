@@ -46,6 +46,9 @@ builder.Services.AddScoped<IOAuthService, OAuthService>();
 // Named HttpClient for OAuth provider calls (Google userinfo, GitHub API)
 builder.Services.AddHttpClient("oauth");
 
+// Generic HttpClient for AdminController proxy calls to other microservices
+builder.Services.AddHttpClient();
+
 // ── 4. Authentication – JWT Bearer ────────────────────────────────────
 builder.Services.AddAuthentication(options =>
 {
@@ -68,7 +71,23 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Any authenticated user
+    options.AddPolicy("AuthenticatedUser", p => p.RequireAuthenticatedUser());
+
+    // Regular members and above
+    options.AddPolicy("MemberOrAbove",
+        p => p.RequireRole("Member", "BoardAdmin", "PlatformAdmin"));
+
+    // Board administrators and platform admins
+    options.AddPolicy("BoardAdminOrAbove",
+        p => p.RequireRole("BoardAdmin", "PlatformAdmin"));
+
+    // Platform admin only
+    options.AddPolicy("PlatformAdminOnly",
+        p => p.RequireRole("PlatformAdmin"));
+});
 
 // ── 5. Controllers ────────────────────────────────────────────────────
 builder.Services.AddControllers();
@@ -124,8 +143,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ── 8. Auto-migrate on startup ────────────────────────────────────────
-// Runs pending EF Core migrations automatically.
-// Safe for development and Docker; in production you may prefer explicit migrations.
 using (var scope = app.Services.CreateScope())
 {
     try

@@ -41,9 +41,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Real-time progress computation for checklists (percentage calculation)
   - Comprehensive unit test suite for labels and checklists
 
+- **UC8 — Notification Service** (Port 5008)
+  - Five notification types: ASSIGNMENT, MENTION, DUE_DATE, COMMENT, MOVE
+  - Real-time unread badge count via SignalR WebSocket hub (`/hubs/notifications`)
+  - Angular `NotificationBellComponent` — dropdown panel, per-type icon+colour, mark-read, delete
+  - `MassTransit` consumer on `notification-events` RabbitMQ queue
+  - SendGrid email dispatch for critical events
+  - Bulk broadcast endpoint for admin system announcements
+  - 8/8 xUnit + Moq unit tests covering full notification lifecycle
+
 ### Infrastructure
-- Docker Compose with 7 independent PostgreSQL instances
-- RabbitMQ for async event messaging
+- Docker Compose with 8 independent PostgreSQL instances
+- RabbitMQ for async event messaging between services
+- SignalR WebSocket endpoint for real-time push
 - Nginx-served Angular production build in Docker
 
 ---
@@ -51,8 +61,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Planned
-- UC8: Real-time collaboration via SignalR / WebSockets
 - UC9: Activity log and audit trail
-- UC10: Due Date Reminders & Notifications Inbox
+- UC10: Due Date Reminders (Quartz.NET scheduler)
 - UC11: Board Templates
 - UC12: Full-text search across cards and comments
