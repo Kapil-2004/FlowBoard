@@ -1,7 +1,6 @@
 databases:
   - name: flowboard-db
     databaseName: flowboard
-    user: postgres
     plan: free
 
 services:
