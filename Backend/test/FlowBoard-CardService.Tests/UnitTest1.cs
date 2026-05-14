@@ -1,4 +1,4 @@
-﻿namespace FlowBoard_CardService.Tests;
+namespace FlowBoard_CardService.Tests;
 
 public class UnitTest1
 {

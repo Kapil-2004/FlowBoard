@@ -220,5 +220,18 @@ namespace FlowBoard_Workspace.Services
             var members = await _repository.GetMembersAsync(workspaceId);
             return members.Select(MapToDto);
         }
+
+        // Admin Methods
+        public async Task<IEnumerable<WorkspaceResponseDto>> GetAllAsync()
+        {
+            var workspaces = await _repository.GetAllAsync();
+            return workspaces.Select(MapToDto);
+        }
+
+        public async Task AdminDeleteWorkspaceAsync(int id)
+        {
+            var workspace = await _repository.GetByIdAsync(id);
+            if (workspace != null) await _repository.DeleteWorkspaceAsync(workspace);
+        }
     }
 }

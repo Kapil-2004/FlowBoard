@@ -23,7 +23,13 @@
         <div class="avatar" *ngFor="let member of board()!.members" [title]="member.userId">
           {{ member.role[0] }}
         </div>
-        <button class="add-member-btn" title="Add Members">+</button>
+        <button
+          id="btn-members-panel"
+          class="add-member-btn"
+          [class.active]="showMembersPanel"
+          title="Manage Members"
+          (click)="showMembersPanel = !showMembersPanel"
+        >👥 Members</button>
       </div>
       <div class="divider"></div>
       <button class="premium-btn" (click)="toggleArchivedPanel()" [class.active]="showArchivedPanel">
@@ -34,8 +40,17 @@
         <span class="icon">⚙️</span>
         Settings
       </button>
+      <app-notification-bell></app-notification-bell>
     </div>
   </nav>
+
+  <!-- Board Members Slide-in Panel -->
+  <div class="members-slide" *ngIf="showMembersPanel && board()">
+    <app-board-members
+      [boardId]="board()!.boardId"
+      [onClose]="closeMembersPanel.bind(this)"
+    ></app-board-members>
+  </div>
 
   <div class="board-body">
     <!-- Main Kanban Area -->

@@ -13,12 +13,15 @@ export interface RegisterRequest {
 // ── Response DTOs ─────────────────────────────────────────────────────────────
 export interface UserDto {
   id: string;
+  userId: string;
   fullName: string;
   email: string;
   avatarUrl: string | null;
   provider: string;
-  createdAt: string;
+  role: string;          // 'Member' | 'BoardAdmin' | 'PlatformAdmin'
+  isActive: boolean;
   lastLoginAt: string | null;
+  createdAt: string;
 }
 
 export interface AuthResponseDto {

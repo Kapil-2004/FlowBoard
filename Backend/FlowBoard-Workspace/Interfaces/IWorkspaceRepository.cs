@@ -13,6 +13,7 @@ namespace FlowBoard_Workspace.Interfaces
         Task<IEnumerable<Workspace>> GetByVisibilityAsync(string visibility);
         Task<bool> ExistsByNameAndOwnerIdAsync(string name, Guid ownerId);
         Task<int> CountByOwnerIdAsync(Guid ownerId);
+        Task<IEnumerable<Workspace>> GetAllAsync();
         
         Task<Workspace> UpdateWorkspaceAsync(Workspace workspace);
         Task DeleteWorkspaceAsync(Workspace workspace);

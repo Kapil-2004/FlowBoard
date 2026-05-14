@@ -52,6 +52,22 @@ namespace FlowBoard.Auth.Models
         [MaxLength(500)]
         public string? AvatarUrl { get; set; }
 
+        /// <summary>
+        /// Platform role: Member | BoardAdmin | PlatformAdmin
+        /// Determines access level across all services.
+        /// </summary>
+        [Column("role")]
+        [MaxLength(30)]
+        public string Role { get; set; } = "Member";
+
+        /// <summary>Whether the account is active. Suspended users cannot log in.</summary>
+        [Column("is_active")]
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>UTC timestamp of last successful login.</summary>
+        [Column("last_login_at")]
+        public DateTime? LastLoginAt { get; set; }
+
         /// <summary>UTC timestamp of account creation.</summary>
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

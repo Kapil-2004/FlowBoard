@@ -65,6 +65,11 @@ namespace FlowBoard_Workspace.Repositories
                 .CountAsync(w => w.OwnerId == ownerId);
         }
 
+        public async Task<IEnumerable<Workspace>> GetAllAsync()
+        {
+            return await _context.Workspaces.ToListAsync();
+        }
+
         public async Task<Workspace> UpdateWorkspaceAsync(Workspace workspace)
         {
             _context.Workspaces.Update(workspace);

@@ -13,6 +13,9 @@ namespace FlowBoard.Auth.DTOs
         public string Email { get; set; } = string.Empty;
         public string Provider { get; set; } = string.Empty;
         public string? AvatarUrl { get; set; }
+        public string Role { get; set; } = "Member";
+        public bool IsActive { get; set; } = true;
+        public DateTime? LastLoginAt { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 

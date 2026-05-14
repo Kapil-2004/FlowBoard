@@ -45,12 +45,19 @@ namespace FlowBoard.Auth.Repositories
         {
             var q = query.ToLower();
             return await _db.Users
-                            .Where(u => (u.FullName != null && u.FullName.ToLower().Contains(q))
-                                     || u.Email.ToLower().Contains(q))
+                            .Where(u => u.IsActive &&
+                                        ((u.FullName != null && u.FullName.ToLower().Contains(q))
+                                       || u.Email.ToLower().Contains(q)))
                             .OrderBy(u => u.FullName)
                             .Take(20)
                             .ToListAsync();
         }
+
+        /// <summary>Returns ALL users (active and suspended) – for admin dashboard.</summary>
+        public async Task<IEnumerable<User>> GetAllAsync()
+            => await _db.Users
+                        .OrderBy(u => u.FullName)
+                        .ToListAsync();
 
         // ── WRITE ────────────────────────────────────────────────────────────
 
@@ -62,13 +69,24 @@ namespace FlowBoard.Auth.Repositories
             return user;
         }
 
-        /// <summary>Persist profile changes for an existing user.</summary>
+        /// <summary>Persist changes for an existing user.</summary>
         public async Task<User> UpdateAsync(User user)
         {
             user.UpdatedAt = DateTime.UtcNow;
             _db.Users.Update(user);
             await _db.SaveChangesAsync();
             return user;
+        }
+
+        /// <summary>Hard-delete a user account (admin only).</summary>
+        public async Task DeleteAsync(Guid userId)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user != null)
+            {
+                _db.Users.Remove(user);
+                await _db.SaveChangesAsync();
+            }
         }
 
         /// <summary>Returns true when the email is already registered (any provider).</summary>

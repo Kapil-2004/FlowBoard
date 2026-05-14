@@ -70,6 +70,13 @@ namespace FlowBoard_Board.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Board>> FindAllAsync()
+        {
+            return await _context.Boards
+                .Include(b => b.Members)
+                .ToListAsync();
+        }
+
         public async Task<Board> CreateBoardAsync(Board board)
         {
             _context.Boards.Add(board);

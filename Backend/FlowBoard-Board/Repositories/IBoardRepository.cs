@@ -14,6 +14,7 @@ namespace FlowBoard_Board.Repositories
         Task<List<Board>> FindByVisibilityAsync(string visibility);
         Task<int> CountByWorkspaceIdAsync(int workspaceId);
         Task<List<Board>> FindByIsClosedAsync(bool isClosed);
+        Task<List<Board>> FindAllAsync();
 
         Task<Board> CreateBoardAsync(Board board);
         Task<Board> UpdateBoardAsync(Board board);

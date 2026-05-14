@@ -19,5 +19,9 @@ namespace FlowBoard_Board.Services
         Task RemoveMemberAsync(int boardId, Guid userIdToRemove, Guid currentUserId);
         Task UpdateMemberRoleAsync(int boardId, Guid userIdToUpdate, UpdateMemberRoleDto updateDto, Guid currentUserId);
         Task<List<BoardMemberDto>> GetMembersAsync(int boardId, Guid currentUserId);
+        
+        // Admin Methods
+        Task<List<BoardDto>> GetAllBoardsAsync();
+        Task AdminDeleteBoardAsync(int id);
     }
 }

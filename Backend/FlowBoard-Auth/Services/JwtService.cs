@@ -37,7 +37,7 @@ namespace FlowBoard.Auth.Services
                 new Claim(ClaimTypes.NameIdentifier,     user.UserId.ToString()),
                 new Claim(ClaimTypes.Email,              user.Email),
                 new Claim(ClaimTypes.Name,               user.FullName ?? user.Email),
-                new Claim(ClaimTypes.Role,               "User")  // all users share the "User" role for now
+                new Claim(ClaimTypes.Role,               user.Role)   // Member | BoardAdmin | PlatformAdmin
             };
 
             // ── Sign with HMAC-SHA256 ────────────────────────────────────────
