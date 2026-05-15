@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Models;
 // ═══════════════════════════════════════════════════════════════════════════
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:10000");
 
 // ── 1. Configuration ─────────────────────────────────────────────────────
 // Bind strongly-typed JwtSettings from appsettings.json → "Jwt" section
@@ -33,16 +34,25 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
-    // Robust parsing for postgres:// or postgresql:// URLs from Render
-    var uri = new Uri(connectionString);
-    var userInfo = uri.UserInfo.Split(':');
-    var username = userInfo[0];
-    var password = userInfo.Length > 1 ? userInfo[1] : "";
-    var host = uri.Host;
-    var port = uri.Port > 0 ? uri.Port : 5432;
-    var database = uri.AbsolutePath.TrimStart('/');
+    // MANUAL PARSING: postgresql://user:password@host:port/database
+    // We avoid System.Uri because it fails on some Render hostnames.
+    try {
+        var uriWithoutScheme = connectionString.Split("://")[1];
+        var parts = uriWithoutScheme.Split('@');
+        var credentials = parts[0].Split(':');
+        var connection = parts[1].Split('/');
+        var hostPort = connection[0].Split(':');
+        
+        var username = credentials[0];
+        var password = credentials[1];
+        var host = hostPort[0];
+        var port = hostPort.Length > 1 ? hostPort[1] : "5432";
+        var database = connection[1].Split('?')[0]; // Ignore query params
 
-    connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    } catch (Exception ex) {
+        throw new Exception($"Failed to parse Render Connection String. Ensure it is in 'postgresql://user:pass@host/db' format. Error: {ex.Message}");
+    }
 }
 
 // Append additional parameters (like SearchPath) from environment variables if provided

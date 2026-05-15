@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:10000");
 
 // ── Controllers ──────────────────────────────────────────────────
 builder.Services.AddControllers();
@@ -43,13 +44,22 @@ builder.Services.AddSwaggerGen(c =>
 
 // ── Database ──────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
+if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
-    var databaseUri = new Uri(connectionString);
-    var userInfo = databaseUri.UserInfo.Split(':');
-    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
-    var password = userInfo.Length > 1 ? userInfo[1] : "";
-    connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    try {
+        var uriWithoutScheme = connectionString.Split("://")[1];
+        var parts = uriWithoutScheme.Split('@');
+        var credentials = parts[0].Split(':');
+        var connection = parts[1].Split('/');
+        var hostPort = connection[0].Split(':');
+        var username = credentials[0];
+        var password = credentials[1];
+        var host = hostPort[0];
+        var port = hostPort.Length > 1 ? hostPort[1] : "5432";
+        var database = connection[1].Split('?')[0];
+
+        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    } catch { }
 }
 
 // Append additional parameters (like SearchPath) from environment variables if provided

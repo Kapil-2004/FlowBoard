@@ -1,6 +1,7 @@
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://0.0.0.0:10000");
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -54,4 +55,4 @@ app.UseRouting();
 
 app.MapReverseProxy();
 
-app.Run("http://localhost:5000");
+app.Run();
