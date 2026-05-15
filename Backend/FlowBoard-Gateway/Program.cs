@@ -8,7 +8,19 @@ builder.Services.AddControllers();
 
 // Add YARP
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(transformContext =>
+    {
+        // Automatically remove the API prefix based on the Route ID
+        if (transformContext.Route.RouteId.StartsWith("auth")) transformContext.AddPathRemovePrefix("/api/auth");
+        else if (transformContext.Route.RouteId.StartsWith("workspace")) transformContext.AddPathRemovePrefix("/api/workspaces");
+        else if (transformContext.Route.RouteId.StartsWith("board")) transformContext.AddPathRemovePrefix("/api/boards");
+        else if (transformContext.Route.RouteId.StartsWith("list")) transformContext.AddPathRemovePrefix("/api/lists");
+        else if (transformContext.Route.RouteId.StartsWith("card")) transformContext.AddPathRemovePrefix("/api/cards");
+        else if (transformContext.Route.RouteId.StartsWith("comment")) transformContext.AddPathRemovePrefix("/api/comments");
+        else if (transformContext.Route.RouteId.StartsWith("label")) transformContext.AddPathRemovePrefix("/api/labels");
+        else if (transformContext.Route.RouteId.StartsWith("notification")) transformContext.AddPathRemovePrefix("/api/notifications");
+    });
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
