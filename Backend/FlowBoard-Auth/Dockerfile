@@ -34,8 +34,8 @@ WORKDIR /app
 # Create a non-root user for security best practice
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
-# Copy published output from the publish stage
-COPY --from=publish /app/publish .
+# Copy published output from the publish stage and set ownership
+COPY --from=publish --chown=appuser:appgroup /app/publish .
 
 # Switch to non-root user
 USER appuser
@@ -43,8 +43,10 @@ USER appuser
 # Expose the service port (matches appsettings.json "Urls")
 EXPOSE 10000
 
-# Environment variables that can be overridden at runtime:
+# Environment variables
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:10000
+# Fix for Segmentation Fault (status 139) in some Linux environments
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 ENTRYPOINT ["dotnet", "FlowBoard-Auth.dll"]

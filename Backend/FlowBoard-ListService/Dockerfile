@@ -17,5 +17,6 @@ COPY --from=build /app/publish .
 
 EXPOSE 10000
 ENV ASPNETCORE_URLS=http://+:10000
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 ENTRYPOINT ["dotnet", "FlowBoard-ListService.dll"]

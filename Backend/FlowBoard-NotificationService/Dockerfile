@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 10000
 ENV ASPNETCORE_URLS=http://+:10000
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
