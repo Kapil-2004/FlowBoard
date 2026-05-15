@@ -164,14 +164,12 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 app.UseCors();
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "api/boards/swagger/{documentName}/swagger.json";
-});
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/api/boards/swagger/v1/swagger.json", "FlowBoard Board API V1");
-    c.RoutePrefix = "api/boards/swagger"; 
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Board API V1");
+    // Support Gateway path
+    c.SwaggerEndpoint("/api/boards/swagger/v1/swagger.json", "FlowBoard Board API V1 (Gateway)");
 });
 
 app.UseAuthentication();

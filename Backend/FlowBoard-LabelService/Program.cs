@@ -109,14 +109,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseRouting();
 app.UseCors();
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "api/labels/swagger/{documentName}/swagger.json";
-});
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/api/labels/swagger/v1/swagger.json", "FlowBoard Label API V1");
-    c.RoutePrefix = "api/labels/swagger";
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Label API V1");
+    // Support Gateway path
+    c.SwaggerEndpoint("/api/labels/swagger/v1/swagger.json", "FlowBoard Label API V1 (Gateway)");
 });
 
 app.UseAuthentication();

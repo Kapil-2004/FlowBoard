@@ -131,14 +131,12 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseRouting();
 app.UseCors("AllowFrontend");
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "api/workspaces/swagger/{documentName}/swagger.json";
-});
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/api/workspaces/swagger/v1/swagger.json", "FlowBoard Workspace API V1");
-    c.RoutePrefix = "api/workspaces/swagger";
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Workspace API V1");
+    // Support Gateway path
+    c.SwaggerEndpoint("/api/workspaces/swagger/v1/swagger.json", "FlowBoard Workspace API V1 (Gateway)");
 });
 
 app.UseAuthentication();

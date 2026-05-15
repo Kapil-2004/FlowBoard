@@ -37,7 +37,6 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gateway");
     
     // Aggregated Swagger endpoints using the Gateway's OWN proxy routes.
-    // This bypasses CORS issues because the browser thinks it's staying on localhost:5000.
     c.SwaggerEndpoint("/api/auth/swagger/v1/swagger.json", "Auth Service");
     c.SwaggerEndpoint("/api/workspaces/swagger/v1/swagger.json", "Workspace Service");
     c.SwaggerEndpoint("/api/boards/swagger/v1/swagger.json", "Board Service");

@@ -164,14 +164,12 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 app.UseCors();
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "api/comments/swagger/{documentName}/swagger.json";
-});
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/api/comments/swagger/v1/swagger.json", "FlowBoard Comment & Attachment API v1");
-    c.RoutePrefix = "api/comments/swagger";
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Comment API v1");
+    // Support Gateway path
+    c.SwaggerEndpoint("/api/comments/swagger/v1/swagger.json", "FlowBoard Comment API v1 (Gateway)");
 });
 
 app.UseAuthentication();

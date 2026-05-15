@@ -198,14 +198,12 @@ using (var scope = app.Services.CreateScope())
 // ── 9. Middleware Pipeline ─────────────────────────────────────────────
 app.UseRouting();
 app.UseCors("AllowFrontend");
-app.UseSwagger(c =>
-{
-    c.RouteTemplate = "api/auth/swagger/{documentName}/swagger.json";
-});
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/api/auth/swagger/v1/swagger.json", "FlowBoard Auth Service v1");
-    c.RoutePrefix = "api/auth/swagger"; 
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Auth Service v1");
+    // Also support the Gateway path
+    c.SwaggerEndpoint("/api/auth/swagger/v1/swagger.json", "FlowBoard Auth Service v1 (Gateway)");
 });
 app.UseAuthentication();
 app.UseAuthorization();
