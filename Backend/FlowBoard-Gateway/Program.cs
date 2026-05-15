@@ -1,7 +1,7 @@
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:10000");
+builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(10000); });
 
 // Add services to the container.
 builder.Services.AddControllers();

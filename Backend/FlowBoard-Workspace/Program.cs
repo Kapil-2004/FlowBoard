@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://0.0.0.0:10000");
+builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(10000); });
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -15,20 +15,17 @@ builder.Services.AddEndpointsApiExplorer();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
-    try {
-        var uriWithoutScheme = connectionString.Split("://")[1];
-        var parts = uriWithoutScheme.Split('@');
-        var credentials = parts[0].Split(':');
-        var connection = parts[1].Split('/');
-        var hostPort = connection[0].Split(':');
-        var username = credentials[0];
-        var password = credentials[1];
-        var host = hostPort[0];
-        var port = hostPort.Length > 1 ? hostPort[1] : "5432";
-        var database = connection[1].Split('?')[0];
-
-        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
-    } catch { }
+    var regex = new System.Text.RegularExpressions.Regex(@"postgres(?:ql)?://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/(.+)");
+    var match = regex.Match(connectionString);
+    if (match.Success)
+    {
+        var user = match.Groups[1].Value;
+        var pass = match.Groups[2].Value;
+        var host = match.Groups[3].Value;
+        var port = match.Groups[4].Success ? match.Groups[4].Value : "5432";
+        var dbPart = match.Groups[5].Value.Split('?')[0];
+        connectionString = $"Host={host};Port={port};Database={dbPart};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+    }
 }
 
 // Append additional parameters (like SearchPath) from environment variables if provided
