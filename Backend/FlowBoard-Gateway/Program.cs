@@ -51,6 +51,7 @@ app.UseSwaggerUI(c =>
 
 app.UseCors();
 app.UseRouting();
+app.MapGet("/", () => "FlowBoard API Gateway is running!");
 
 app.MapReverseProxy();
 

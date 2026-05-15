@@ -17,24 +17,29 @@ builder.Services.AddControllers();
 
 // ── Database ─────────────────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
+if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 {
     try 
     {
-        var uriWithoutScheme = connectionString.Substring(connectionString.IndexOf("://") + 3);
-        var atIndex = uriWithoutScheme.LastIndexOf('@');
-        var credentials = uriWithoutScheme.Substring(0, atIndex);
-        var serverDb = uriWithoutScheme.Substring(atIndex + 1);
-        var userPass = credentials.Split(':');
-        var user = userPass[0];
-        var pass = userPass[1];
-        var hostDb = serverDb.Split('/');
-        var hostPort = hostDb[0].Split(':');
-        var host = hostPort[0];
-        var port = hostPort.Length > 1 ? hostPort[1] : "5432";
-        var db = hostDb[1].Split('?')[0];
-
-        connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        var schemeIndex = connectionString.IndexOf("://");
+        var uriPart = connectionString.Substring(schemeIndex + 3);
+        var atIndex = uriPart.LastIndexOf('@');
+        if (atIndex > 0)
+        {
+            var credentials = uriPart.Substring(0, atIndex);
+            var serverDb = uriPart.Substring(atIndex + 1);
+            var userPass = credentials.Split(':');
+            if (userPass.Length >= 2)
+            {
+                var hostDb = serverDb.Split('/');
+                var hostPort = hostDb[0].Split(':');
+                var dbPart = hostDb.Length > 1 ? hostDb[1].Split('?')[0] : "";
+                if (!string.IsNullOrEmpty(dbPart))
+                {
+                    connectionString = $"Host={hostPort[0]};Port={(hostPort.Length > 1 ? hostPort[1] : "5432")};Database={dbPart};Username={userPass[0]};Password={userPass[1]};SSL Mode=Require;Trust Server Certificate=true";
+                }
+            }
+        }
     }
     catch { }
 }
@@ -181,5 +186,6 @@ app.UseSwaggerUI(c =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapGet("/", () => "FlowBoard List Service is running!");
 
 app.Run();
