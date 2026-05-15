@@ -5,9 +5,6 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Internal DNS resolution
-    resolver 127.0.0.11 valid=30s;
-
     # Angular routing support
     location / {
         try_files $uri $uri/ /index.html;
@@ -15,79 +12,68 @@ server {
 
     # Auth Service
     location /api/auth/ {
-        set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream;
-        proxy_set_header Host $auth_upstream;
+        proxy_pass http://${AUTH_SERVICE_URL};
+        proxy_set_header Host ${AUTH_SERVICE_URL};
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     location /api/admin/ {
-        set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream;
-        proxy_set_header Host $auth_upstream;
+        proxy_pass http://${AUTH_SERVICE_URL};
+        proxy_set_header Host ${AUTH_SERVICE_URL};
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     # Workspace Service
     location /api/workspaces/ {
-        set $workspace_upstream ${WORKSPACE_SERVICE_URL};
-        proxy_pass http://$workspace_upstream;
-        proxy_set_header Host $workspace_upstream;
+        proxy_pass http://${WORKSPACE_SERVICE_URL};
+        proxy_set_header Host ${WORKSPACE_SERVICE_URL};
     }
 
     # Board Service
     location /api/boards/ {
-        set $board_upstream ${BOARD_SERVICE_URL};
-        proxy_pass http://$board_upstream;
-        proxy_set_header Host $board_upstream;
+        proxy_pass http://${BOARD_SERVICE_URL};
+        proxy_set_header Host ${BOARD_SERVICE_URL};
     }
 
     # List Service
     location /api/lists/ {
-        set $list_upstream ${LIST_SERVICE_URL};
-        proxy_pass http://$list_upstream;
-        proxy_set_header Host $list_upstream;
+        proxy_pass http://${LIST_SERVICE_URL};
+        proxy_set_header Host ${LIST_SERVICE_URL};
     }
 
     # Card Service
     location /api/cards/ {
-        set $card_upstream ${CARD_SERVICE_URL};
-        proxy_pass http://$card_upstream;
-        proxy_set_header Host $card_upstream;
+        proxy_pass http://${CARD_SERVICE_URL};
+        proxy_set_header Host ${CARD_SERVICE_URL};
     }
 
     # Comment/Attachment Service
     location /api/comments/ {
-        set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream;
-        proxy_set_header Host $comment_upstream;
+        proxy_pass http://${COMMENT_SERVICE_URL};
+        proxy_set_header Host ${COMMENT_SERVICE_URL};
     }
 
     location /api/attachments/ {
-        set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream;
-        proxy_set_header Host $comment_upstream;
+        proxy_pass http://${COMMENT_SERVICE_URL};
+        proxy_set_header Host ${COMMENT_SERVICE_URL};
     }
 
     # Label Service
     location /api/labels/ {
-        set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream;
-        proxy_set_header Host $label_upstream;
+        proxy_pass http://${LABEL_SERVICE_URL};
+        proxy_set_header Host ${LABEL_SERVICE_URL};
     }
 
     location /api/checklist/ {
-        set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream;
-        proxy_set_header Host $label_upstream;
+        proxy_pass http://${LABEL_SERVICE_URL};
+        proxy_set_header Host ${LABEL_SERVICE_URL};
     }
 
     # Notification Service
     location /api/notifications/ {
-        set $notification_upstream ${NOTIFICATION_SERVICE_URL};
-        proxy_pass http://$notification_upstream;
-        proxy_set_header Host $notification_upstream;
+        proxy_pass http://${NOTIFICATION_SERVICE_URL};
+        proxy_set_header Host ${NOTIFICATION_SERVICE_URL};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
