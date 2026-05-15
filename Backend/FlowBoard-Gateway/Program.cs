@@ -63,7 +63,28 @@ app.UseSwaggerUI(c =>
 
 app.UseCors();
 app.UseRouting();
-app.MapGet("/", () => "FlowBoard API Gateway is running!");
+app.MapGet("/", (IConfiguration config) => 
+{
+    var auth = config["ReverseProxy:Clusters:auth-cluster:Destinations:destination1:Address"];
+    var workspace = config["ReverseProxy:Clusters:workspace-cluster:Destinations:destination1:Address"];
+    
+    return Results.Content($@"
+        <html>
+            <body style='font-family: sans-serif; padding: 20px;'>
+                <h1 style='color: #2c3e50;'>FlowBoard Gateway Status</h1>
+                <p>Gateway is <strong>Live</strong></p>
+                <hr/>
+                <h3>Configured Destinations:</h3>
+                <ul>
+                    <li><strong>Auth:</strong> {auth ?? "NOT CONFIGURED"}</li>
+                    <li><strong>Workspace:</strong> {workspace ?? "NOT CONFIGURED"}</li>
+                </ul>
+                <p style='color: #7f8c8d; font-size: 0.9em;'>
+                    Note: If you see 'http://auth-service:10000', you need to update your Render Environment Variables to use the Public HTTPS URLs.
+                </p>
+            </body>
+        </html>", "text/html");
+});
 
 app.MapReverseProxy();
 
