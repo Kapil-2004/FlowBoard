@@ -7,6 +7,8 @@ builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(10
 builder.Services.AddControllers();
 
 // Add YARP
+builder.Configuration.AddEnvironmentVariables(); // Force reload env vars
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(transformContext =>
@@ -63,6 +65,13 @@ app.UseSwaggerUI(c =>
 
 app.UseCors();
 app.UseRouting();
+
+// Diagnostic logging
+var authUrl = app.Configuration["ReverseProxy:Clusters:auth-cluster:Destinations:destination1:Address"];
+Console.WriteLine($"[CONFIG] Auth Destination: {authUrl ?? "MISSING"}");
+var wsUrl = app.Configuration["ReverseProxy:Clusters:workspace-cluster:Destinations:destination1:Address"];
+Console.WriteLine($"[CONFIG] Workspace Destination: {wsUrl ?? "MISSING"}");
+
 app.MapGet("/", (IConfiguration config) => 
 {
     var auth = config["ReverseProxy:Clusters:auth-cluster:Destinations:destination1:Address"];
