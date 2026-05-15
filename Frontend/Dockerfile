@@ -11,6 +11,4 @@ FROM nginx:alpine
 COPY --from=build /app/dist/flow-board-web/browser /usr/share/nginx/html
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 EXPOSE 80
-
-# Detect the system resolver IP and start Nginx
-CMD ["/bin/sh", "-c", "export RESOLVER_IP=$(awk '/nameserver/ {print $2}' /etc/resolv.conf | head -n 1); /docker-entrypoint.sh nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
