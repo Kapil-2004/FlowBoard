@@ -25,7 +25,9 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
-connectionString += ";SearchPath=list";
+// Append additional parameters (like SearchPath) from environment variables if provided
+var append = builder.Configuration["ConnectionStrings:DefaultConnectionAppend"] ?? ";SearchPath=list";
+connectionString += append;
 
 builder.Services.AddDbContext<ListDbContext>(options =>
     options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "list")));

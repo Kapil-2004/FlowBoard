@@ -47,7 +47,9 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
     connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
-connectionString += ";SearchPath=label";
+// Append additional parameters (like SearchPath) from environment variables if provided
+var append = builder.Configuration["ConnectionStrings:DefaultConnectionAppend"] ?? ";SearchPath=label";
+connectionString += append;
 
 builder.Services.AddDbContext<LabelDbContext>(options =>
     options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__EFMigrationsHistory", "label")));
