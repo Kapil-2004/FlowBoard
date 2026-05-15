@@ -46,17 +46,24 @@ builder.Services.AddSwaggerGen(c =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
-    var regex = new System.Text.RegularExpressions.Regex(@"postgres(?:ql)?://([^:]+):([^@]+)@([^:/]+)(?::(\d+))?/(.+)");
-    var match = regex.Match(connectionString);
-    if (match.Success)
+    try 
     {
-        var user = match.Groups[1].Value;
-        var pass = match.Groups[2].Value;
-        var host = match.Groups[3].Value;
-        var port = match.Groups[4].Success ? match.Groups[4].Value : "5432";
-        var dbPart = match.Groups[5].Value.Split('?')[0];
-        connectionString = $"Host={host};Port={port};Database={dbPart};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        var uriWithoutScheme = connectionString.Substring(connectionString.IndexOf("://") + 3);
+        var atIndex = uriWithoutScheme.LastIndexOf('@');
+        var credentials = uriWithoutScheme.Substring(0, atIndex);
+        var serverDb = uriWithoutScheme.Substring(atIndex + 1);
+        var userPass = credentials.Split(':');
+        var user = userPass[0];
+        var pass = userPass[1];
+        var hostDb = serverDb.Split('/');
+        var hostPort = hostDb[0].Split(':');
+        var host = hostPort[0];
+        var port = hostPort.Length > 1 ? hostPort[1] : "5432";
+        var db = hostDb[1].Split('?')[0];
+
+        connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
     }
+    catch { }
 }
 
 // Append additional parameters (like SearchPath) from environment variables if provided
