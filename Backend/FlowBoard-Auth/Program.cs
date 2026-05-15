@@ -31,13 +31,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
                        ?? throw new InvalidOperationException("Database connection string not configured.");
 
-if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
+if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
-    var databaseUri = new Uri(connectionString);
-    var userInfo = databaseUri.UserInfo.Split(':');
-    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+    // Robust parsing for postgres:// or postgresql:// URLs from Render
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
     var password = userInfo.Length > 1 ? userInfo[1] : "";
-    connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var database = uri.AbsolutePath.TrimStart('/');
+
+    connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
 // Append additional parameters (like SearchPath) from environment variables if provided
