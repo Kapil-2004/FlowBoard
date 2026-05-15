@@ -70,6 +70,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=workspace"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: board-service
@@ -85,6 +91,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=board"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: list-service
@@ -100,6 +112,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=list"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: card-service
@@ -115,6 +133,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=card"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: comment-service
@@ -130,6 +154,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=comment"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: label-service
@@ -145,6 +175,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=label"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   - type: web
     name: notification-service
@@ -160,6 +196,12 @@ services:
           property: connectionString
       - key: ConnectionStrings__DefaultConnectionAppend
         value: ";SearchPath=notification"
+      - key: Jwt__Secret
+        sync: false
+      - key: Jwt__Issuer
+        value: FlowBoard.Auth
+      - key: Jwt__Audience
+        value: FlowBoard.Client
 
   # --- Frontend ---
   - type: web
