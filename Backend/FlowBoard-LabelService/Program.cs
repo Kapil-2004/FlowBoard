@@ -98,14 +98,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseRouting();
 app.UseCors();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/labels/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/labels/swagger/v1/swagger.json", "FlowBoard Label API V1");
+    c.RoutePrefix = "api/labels/swagger";
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

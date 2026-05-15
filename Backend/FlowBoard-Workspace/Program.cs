@@ -120,14 +120,17 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseRouting();
 app.UseCors("AllowFrontend");
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/workspaces/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/workspaces/swagger/v1/swagger.json", "FlowBoard Workspace API V1");
+    c.RoutePrefix = "api/workspaces/swagger";
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

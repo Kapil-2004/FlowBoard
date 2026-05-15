@@ -4,72 +4,92 @@ databases:
     plan: free
 
 services:
+  # --- API Gateway (Central Hub) ---
+  - type: web
+    name: flowboard-gateway
+    runtime: docker
+    rootDir: ./Backend/FlowBoard-Gateway
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:10000
+      - key: ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address
+        value: http://auth-service:10000
+      - key: ReverseProxy__Clusters__workspace-cluster__Destinations__destination1__Address
+        value: http://workspace-service:10000
+      - key: ReverseProxy__Clusters__board-cluster__Destinations__destination1__Address
+        value: http://board-service:10000
+      - key: ReverseProxy__Clusters__list-cluster__Destinations__destination1__Address
+        value: http://list-service:10000
+      - key: ReverseProxy__Clusters__card-cluster__Destinations__destination1__Address
+        value: http://card-service:10000
+      - key: ReverseProxy__Clusters__comment-cluster__Destinations__destination1__Address
+        value: http://comment-service:10000
+      - key: ReverseProxy__Clusters__label-cluster__Destinations__destination1__Address
+        value: http://label-service:10000
+      - key: ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address
+        value: http://notification-service:10000
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
+
   # --- Backend Services ---
   - type: web
     name: auth-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-Auth
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: ASPNETCORE_ENVIRONMENT
-        value: Production
       - key: ASPNETCORE_URLS
         value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=auth"
       - key: Jwt__Secret
-        sync: false
+        sync: false # Set this in Render Dashboard
       - key: Jwt__Issuer
         value: FlowBoard.Auth
       - key: Jwt__Audience
         value: FlowBoard.Client
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
 
   - type: web
     name: workspace-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-Workspace
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: ASPNETCORE_ENVIRONMENT
-        value: Production
       - key: ASPNETCORE_URLS
         value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=workspace"
 
   - type: web
     name: board-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-Board
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: ASPNETCORE_ENVIRONMENT
-        value: Production
       - key: ASPNETCORE_URLS
         value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=board"
 
   - type: web
     name: list-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-ListService
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
@@ -78,14 +98,13 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=list"
 
   - type: web
     name: card-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-CardService
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
@@ -94,14 +113,13 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=card"
 
   - type: web
     name: comment-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-Comment_AttachmentService
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
@@ -110,16 +128,13 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: RabbitMQ__Uri
-        sync: false
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=comment"
 
   - type: web
     name: label-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-LabelService
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
@@ -128,14 +143,13 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=label"
 
   - type: web
     name: notification-service
     runtime: docker
     rootDir: ./Backend/FlowBoard-NotificationService
-    dockerfilePath: Dockerfile
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
@@ -144,15 +158,15 @@ services:
         fromDatabase:
           name: flowboard-db
           property: connectionString
-      - key: RabbitMQ__Uri
-        sync: false
-      - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+      - key: ConnectionStrings__DefaultConnectionAppend
+        value: ";SearchPath=notification"
 
   # --- Frontend ---
   - type: web
     name: flowboard-web
     runtime: docker
     rootDir: ./Frontend
-    dockerfilePath: Dockerfile
     plan: free
+    envVars:
+      - key: API_GATEWAY_URL
+        value: https://flowboard-gateway.onrender.com

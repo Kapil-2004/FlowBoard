@@ -142,10 +142,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ListDbContext>();
-        var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
         context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS list;");
-        if (!databaseCreator.Exists()) databaseCreator.Create();
-        try { databaseCreator.CreateTables(); } catch { /* Tables might already exist */ }
+        context.Database.Migrate(); // Auto-migrate on startup
     }
     catch (Exception ex)
     {
@@ -156,6 +154,16 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 app.UseCors();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/lists/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/lists/swagger/v1/swagger.json", "FlowBoard List API V1");
+    c.RoutePrefix = "api/lists/swagger";
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

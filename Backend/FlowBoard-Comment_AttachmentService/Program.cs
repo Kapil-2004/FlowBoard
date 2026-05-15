@@ -143,10 +143,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<CommentDbContext>();
-        var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
         context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS comment;");
-        if (!databaseCreator.Exists()) databaseCreator.Create();
-        try { databaseCreator.CreateTables(); } catch { }
+        context.Database.Migrate(); // Auto-migrate on startup
     }
     catch (Exception ex)
     {
@@ -157,14 +155,18 @@ using (var scope = app.Services.CreateScope())
 
 app.UseRouting();
 app.UseCors();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/comments/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/comments/swagger/v1/swagger.json", "FlowBoard Comment & Attachment API v1");
+    c.RoutePrefix = "api/comments/swagger";
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Comment & Attachment API v1");
-});
 
 app.Run();

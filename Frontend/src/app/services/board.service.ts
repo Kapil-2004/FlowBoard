@@ -8,7 +8,7 @@ import { BoardResponseDto, BoardCreateDto, BoardUpdateDto, BoardMemberDto, AddBo
 })
 export class BoardService {
   private isProd = !window.location.hostname.includes('localhost');
-  private apiUrl = this.isProd ? 'https://board-service.onrender.com/api/boards' : '/api/boards';
+  private apiUrl = '/api/boards';
 
   constructor(private http: HttpClient) { }
 

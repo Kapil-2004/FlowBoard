@@ -111,7 +111,7 @@ namespace auth_service.UC1_Auth.Data.Migrations
                             Email = "admin@flowboard.app",
                             FullName = "Platform Admin",
                             IsActive = true,
-                            PasswordHash = "$2a$12$bbV6V/fE0YPFu3WtSf99A.oMOX1s5lhODJWxZQ0RhOl90j.NgDVAu",
+                            PasswordHash = "$2a$12$YcemAolnwUuQ.KHej.krBu1SfIgNUnUX9g8pi5JEWt4eXZrdLuY/O",
                             Provider = "LOCAL",
                             Role = "PlatformAdmin",
                             UpdatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)

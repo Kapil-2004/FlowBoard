@@ -15,7 +15,7 @@ import {
 export class ListService {
   /** FlowBoard-ListService runs on port 5004 */
   private isProd = !window.location.hostname.includes('localhost');
-  private apiUrl = this.isProd ? 'https://list-service.onrender.com/api/lists' : '/api/lists';
+  private apiUrl = '/api/lists';
 
   constructor(private http: HttpClient) {}
 

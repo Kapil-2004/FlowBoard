@@ -143,21 +143,28 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<BoardDbContext>();
-        var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
         context.Database.ExecuteSqlRaw("CREATE SCHEMA IF NOT EXISTS board;");
-        if (!databaseCreator.Exists()) databaseCreator.Create();
-        try { databaseCreator.CreateTables(); } catch { }
         context.Database.Migrate(); // Auto-migrate on startup
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred creating the DB.");
+        logger.LogError(ex, "An error occurred while migrating the Board database.");
     }
 }
 
 app.UseRouting();
 app.UseCors();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/boards/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/boards/swagger/v1/swagger.json", "FlowBoard Board API V1");
+    c.RoutePrefix = "api/boards/swagger"; 
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

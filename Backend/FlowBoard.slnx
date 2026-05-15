@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="FlowBoard-Auth/FlowBoard-Auth.csproj" />
+  <Project Path="FlowBoard-Board/FlowBoard-Board.csproj" />
+  <Project Path="FlowBoard-CardService/FlowBoard-CardService.csproj" />
+  <Project Path="FlowBoard-Comment_AttachmentService/FlowBoard-Comment_AttachmentService.csproj" />
+  <Project Path="FlowBoard-Gateway/FlowBoard-Gateway.csproj" />
+  <Project Path="FlowBoard-LabelService/FlowBoard-LabelService.csproj" />
+  <Project Path="FlowBoard-ListService/FlowBoard-ListService.csproj" />
+  <Project Path="FlowBoard-NotificationService/FlowBoard-NotificationService.csproj" />
+  <Project Path="FlowBoard-Workspace/FlowBoard-Workspace.csproj" />
+</Solution>

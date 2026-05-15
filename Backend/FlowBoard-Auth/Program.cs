@@ -187,18 +187,17 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ── 9. Middleware Pipeline ─────────────────────────────────────────────
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard Auth Service v1");
-        c.RoutePrefix = string.Empty; // Swagger at root: http://localhost:5001/
-    });
-}
-
 app.UseRouting();
 app.UseCors("AllowFrontend");
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/auth/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/auth/swagger/v1/swagger.json", "FlowBoard Auth Service v1");
+    c.RoutePrefix = "api/auth/swagger"; 
+});
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

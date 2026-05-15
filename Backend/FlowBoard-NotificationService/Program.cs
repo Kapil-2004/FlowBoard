@@ -148,14 +148,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseRouting();
 app.UseCors();
+app.UseSwagger(c =>
+{
+    c.RouteTemplate = "api/notifications/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/api/notifications/swagger/v1/swagger.json", "FlowBoard Notification API V1");
+    c.RoutePrefix = "api/notifications/swagger"; 
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

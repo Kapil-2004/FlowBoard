@@ -87,7 +87,7 @@ namespace FlowBoard_CardService.Repositories
         public async Task<int?> FindMaxPositionByListIdAsync(int listId)
         {
             return await _context.Cards
-                .Where(c => c.ListId == listId && !c.IsArchived)
+                .Where(c => c.ListId == listId)
                 .MaxAsync(c => (int?)c.Position);
         }
 

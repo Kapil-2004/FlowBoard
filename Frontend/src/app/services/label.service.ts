@@ -9,7 +9,7 @@ import { Label, Checklist, ChecklistItem, CreateLabelDto, CreateChecklistDto } f
 export class LabelService {
   private http = inject(HttpClient);
   private isProd = !window.location.hostname.includes('localhost');
-  private labelUrl = this.isProd ? 'https://label-service.onrender.com/api/label' : '/api/label';
+  private labelUrl = '/api/labels';
   private checklistUrl = this.isProd ? 'https://label-service.onrender.com/api/checklist' : '/api/checklist';
 
   // Labels

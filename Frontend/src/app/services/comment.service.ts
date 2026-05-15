@@ -7,15 +7,14 @@ import { Comment, CreateCommentDto, UpdateCommentDto, Attachment } from '../mode
   providedIn: 'root'
 })
 export class CommentService {
-  private isProd = !window.location.hostname.includes('localhost');
-  private commentApiUrl = this.isProd ? 'https://comment-service.onrender.com/api/comments' : '/api/comments';
-  private attachmentApiUrl = this.isProd ? 'https://comment-service.onrender.com/api/attachments' : '/api/attachments';
+  private apiUrl = '/api/comments';
+  private attachmentApiUrl = '/api/comments/attachments';
 
   constructor(private http: HttpClient) {}
 
   // ── Comments ─────────────────────────────────────────────────────────────
   addComment(dto: CreateCommentDto): Observable<Comment> {
-    return this.http.post<Comment>(this.commentApiUrl, dto);
+    return this.http.post<Comment>(this.apiUrl, dto);
   }
 
   getByCard(cardId: number): Observable<Comment[]> {

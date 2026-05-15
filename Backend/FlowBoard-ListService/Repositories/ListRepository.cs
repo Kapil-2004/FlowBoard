@@ -60,12 +60,12 @@ namespace FlowBoard_ListService.Repositories
         public async Task<int?> FindMaxPositionByBoardIdAsync(int boardId)
         {
             var hasLists = await _context.TaskLists
-                .AnyAsync(l => l.BoardId == boardId && !l.IsArchived);
+                .AnyAsync(l => l.BoardId == boardId);
 
             if (!hasLists) return null;
 
             return await _context.TaskLists
-                .Where(l => l.BoardId == boardId && !l.IsArchived)
+                .Where(l => l.BoardId == boardId)
                 .MaxAsync(l => l.Position);
         }
 

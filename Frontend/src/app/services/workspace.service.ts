@@ -4,8 +4,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { WorkspaceResponseDto, WorkspaceCreateDto, WorkspaceMemberDto } from '../models/workspace.models';
 
-const isProd = !window.location.hostname.includes('localhost');
-const API_BASE = isProd ? 'https://workspace-service.onrender.com/api/workspaces' : '/api/workspaces';
+const API_BASE = '/api/workspaces';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
