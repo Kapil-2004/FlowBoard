@@ -179,8 +179,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard List API V1");
-    // Support Gateway path
-    c.SwaggerEndpoint("/api/lists/swagger/v1/swagger.json", "FlowBoard List API V1 (Gateway)");
+    c.RoutePrefix = "swagger";
 });
 
 app.UseAuthentication();
