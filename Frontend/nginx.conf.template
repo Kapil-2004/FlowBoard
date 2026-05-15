@@ -5,82 +5,9 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Inject Render's TRUE internal DNS IP (Prevents the 502 Connection Refused)
-    resolver ${RESOLVER_IP} valid=5s ipv6=off;
-
     # Angular routing support
     location / {
         try_files $uri $uri/ /index.html;
     }
-
-    # Proxy settings
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-    # Auth Service
-    location /api/auth/ {
-        set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream;
-    }
-
-    location /api/admin/ {
-        set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass http://$auth_upstream;
-    }
-
-    # Workspace Service
-    location /api/workspaces/ {
-        set $workspace_upstream ${WORKSPACE_SERVICE_URL};
-        proxy_pass http://$workspace_upstream;
-    }
-
-    # Board Service
-    location /api/boards/ {
-        set $board_upstream ${BOARD_SERVICE_URL};
-        proxy_pass http://$board_upstream;
-    }
-
-    # List Service
-    location /api/lists/ {
-        set $list_upstream ${LIST_SERVICE_URL};
-        proxy_pass http://$list_upstream;
-    }
-
-    # Card Service
-    location /api/cards/ {
-        set $card_upstream ${CARD_SERVICE_URL};
-        proxy_pass http://$card_upstream;
-    }
-
-    # Comment/Attachment Service
-    location /api/comments/ {
-        set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream;
-    }
-
-    location /api/attachments/ {
-        set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass http://$comment_upstream;
-    }
-
-    # Label Service
-    location /api/labels/ {
-        set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream;
-    }
-
-    location /api/checklist/ {
-        set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass http://$label_upstream;
-    }
-
-    # Notification Service
-    location /api/notifications/ {
-        set $notification_upstream ${NOTIFICATION_SERVICE_URL};
-        proxy_pass http://$notification_upstream;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
 }
+

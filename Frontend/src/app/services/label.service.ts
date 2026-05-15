@@ -8,8 +8,9 @@ import { Label, Checklist, ChecklistItem, CreateLabelDto, CreateChecklistDto } f
 })
 export class LabelService {
   private http = inject(HttpClient);
-  private labelUrl = '/api/label';
-  private checklistUrl = '/api/checklist';
+  private isProd = !window.location.hostname.includes('localhost');
+  private labelUrl = this.isProd ? 'https://label-service.onrender.com/api/label' : '/api/label';
+  private checklistUrl = this.isProd ? 'https://label-service.onrender.com/api/checklist' : '/api/checklist';
 
   // Labels
   createLabel(dto: CreateLabelDto): Observable<Label> {

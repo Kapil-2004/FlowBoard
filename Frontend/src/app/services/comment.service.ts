@@ -7,8 +7,9 @@ import { Comment, CreateCommentDto, UpdateCommentDto, Attachment } from '../mode
   providedIn: 'root'
 })
 export class CommentService {
-  private commentApiUrl = '/api/comments';
-  private attachmentApiUrl = '/api/attachments';
+  private isProd = !window.location.hostname.includes('localhost');
+  private commentApiUrl = this.isProd ? 'https://comment-service.onrender.com/api/comments' : '/api/comments';
+  private attachmentApiUrl = this.isProd ? 'https://comment-service.onrender.com/api/attachments' : '/api/attachments';
 
   constructor(private http: HttpClient) {}
 

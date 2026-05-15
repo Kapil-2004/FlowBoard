@@ -14,7 +14,8 @@ import {
   providedIn: 'root'
 })
 export class CardService {
-  private apiUrl = '/api/cards';
+  private isProd = !window.location.hostname.includes('localhost');
+  private apiUrl = this.isProd ? 'https://card-service.onrender.com/api/cards' : '/api/cards';
 
   constructor(private http: HttpClient) {}
 

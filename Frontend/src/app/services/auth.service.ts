@@ -11,7 +11,8 @@ import {
   ApiResponse,
 } from '../models/auth.models';
 
-const API_BASE = '/api/auth';
+const isProd = !window.location.hostname.includes('localhost');
+const API_BASE = isProd ? 'https://auth-service.onrender.com/api/auth' : '/api/auth';
 const TOKEN_KEY = 'fb_token';
 const USER_KEY  = 'fb_user';
 
