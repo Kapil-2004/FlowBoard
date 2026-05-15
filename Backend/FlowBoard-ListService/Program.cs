@@ -65,14 +65,16 @@ builder.Services.AddAuthentication(options =>
 });
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
-var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
-    ?? Array.Empty<string>();
-
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        var origins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(o => o.Trim())
+            .ToArray();
+
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
