@@ -1,24 +1,22 @@
 server {
-    listen 80;
+    listen ${PORT};
     server_name localhost;
 
     root /usr/share/nginx/html;
     index index.html;
 
-    # Runtime DNS resolution required for variable-based proxy_pass
-    resolver 8.8.8.8 8.8.4.4 valid=30s ipv6=off;
+    # Internal DNS resolution
+    resolver 127.0.0.11 valid=30s;
 
     # Angular routing support
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Auth Service - /api/auth/ and /api/admin/
+    # Auth Service
     location /api/auth/ {
         set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass https://$auth_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $auth_upstream;
+        proxy_pass http://$auth_upstream;
         proxy_set_header Host $auth_upstream;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -26,9 +24,7 @@ server {
 
     location /api/admin/ {
         set $auth_upstream ${AUTH_SERVICE_URL};
-        proxy_pass https://$auth_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $auth_upstream;
+        proxy_pass http://$auth_upstream;
         proxy_set_header Host $auth_upstream;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -36,79 +32,61 @@ server {
     # Workspace Service
     location /api/workspaces/ {
         set $workspace_upstream ${WORKSPACE_SERVICE_URL};
-        proxy_pass https://$workspace_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $workspace_upstream;
+        proxy_pass http://$workspace_upstream;
         proxy_set_header Host $workspace_upstream;
     }
 
     # Board Service
     location /api/boards/ {
         set $board_upstream ${BOARD_SERVICE_URL};
-        proxy_pass https://$board_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $board_upstream;
+        proxy_pass http://$board_upstream;
         proxy_set_header Host $board_upstream;
     }
 
     # List Service
     location /api/lists/ {
         set $list_upstream ${LIST_SERVICE_URL};
-        proxy_pass https://$list_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $list_upstream;
+        proxy_pass http://$list_upstream;
         proxy_set_header Host $list_upstream;
     }
 
     # Card Service
     location /api/cards/ {
         set $card_upstream ${CARD_SERVICE_URL};
-        proxy_pass https://$card_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $card_upstream;
+        proxy_pass http://$card_upstream;
         proxy_set_header Host $card_upstream;
     }
 
     # Comment/Attachment Service
     location /api/comments/ {
         set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass https://$comment_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $comment_upstream;
+        proxy_pass http://$comment_upstream;
         proxy_set_header Host $comment_upstream;
     }
 
     location /api/attachments/ {
         set $comment_upstream ${COMMENT_SERVICE_URL};
-        proxy_pass https://$comment_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $comment_upstream;
+        proxy_pass http://$comment_upstream;
         proxy_set_header Host $comment_upstream;
     }
 
     # Label Service
     location /api/labels/ {
         set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass https://$label_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $label_upstream;
+        proxy_pass http://$label_upstream;
         proxy_set_header Host $label_upstream;
     }
 
     location /api/checklist/ {
         set $label_upstream ${LABEL_SERVICE_URL};
-        proxy_pass https://$label_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $label_upstream;
+        proxy_pass http://$label_upstream;
         proxy_set_header Host $label_upstream;
     }
 
-    # Notification Service (with WebSocket support for SignalR)
+    # Notification Service
     location /api/notifications/ {
         set $notification_upstream ${NOTIFICATION_SERVICE_URL};
-        proxy_pass https://$notification_upstream;
-        proxy_ssl_server_name on;
-        proxy_ssl_name $notification_upstream;
+        proxy_pass http://$notification_upstream;
         proxy_set_header Host $notification_upstream;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
