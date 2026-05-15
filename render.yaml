@@ -15,7 +15,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5001
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -26,6 +26,8 @@ services:
         value: FlowBoard.Auth
       - key: Jwt__Audience
         value: FlowBoard.Client
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: workspace-service
@@ -37,11 +39,13 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5002
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: board-service
@@ -53,11 +57,13 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ASPNETCORE_URLS
-        value: http://+:5003
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: list-service
@@ -67,11 +73,13 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5004
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: card-service
@@ -81,11 +89,13 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5005
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: comment-service
@@ -95,13 +105,15 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5006
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
       - key: RabbitMQ__Uri
         sync: false
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: label-service
@@ -111,11 +123,13 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5007
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
   - type: web
     name: notification-service
@@ -125,59 +139,20 @@ services:
     plan: free
     envVars:
       - key: ASPNETCORE_URLS
-        value: http://+:5008
+        value: http://+:10000
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
           property: connectionString
       - key: RabbitMQ__Uri
         sync: false
+      - key: Cors__AllowedOrigins
+        value: https://flowboard-web.onrender.com
 
-  # --- Frontend Gateway ---
+  # --- Frontend ---
   - type: web
     name: flowboard-web
     runtime: docker
     rootDir: ./Frontend
     dockerfilePath: Dockerfile
     plan: free
-    envVars:
-      - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: auth-service
-          property: host
-      - key: WORKSPACE_SERVICE_URL
-        fromService:
-          type: web
-          name: workspace-service
-          property: host
-      - key: BOARD_SERVICE_URL
-        fromService:
-          type: web
-          name: board-service
-          property: host
-      - key: LIST_SERVICE_URL
-        fromService:
-          type: web
-          name: list-service
-          property: host
-      - key: CARD_SERVICE_URL
-        fromService:
-          type: web
-          name: card-service
-          property: host
-      - key: COMMENT_SERVICE_URL
-        fromService:
-          type: web
-          name: comment-service
-          property: host
-      - key: LABEL_SERVICE_URL
-        fromService:
-          type: web
-          name: label-service
-          property: host
-      - key: NOTIFICATION_SERVICE_URL
-        fromService:
-          type: web
-          name: notification-service
-          property: host
