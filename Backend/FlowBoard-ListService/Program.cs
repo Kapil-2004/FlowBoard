@@ -72,11 +72,15 @@ builder.Services.AddCors(options =>
         var origins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200")
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(o => o.Trim())
-            .ToArray();
+            .ToList();
 
-        policy.WithOrigins(origins)
+        var variations = origins.Select(o => o.TrimEnd('/')).ToList();
+        variations.AddRange(variations.Select(v => v + "/").ToList());
+
+        policy.WithOrigins(variations.Distinct().ToArray())
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -150,6 +154,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

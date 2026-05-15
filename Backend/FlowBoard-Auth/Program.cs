@@ -147,11 +147,16 @@ builder.Services.AddCors(options =>
         var origins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200")
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(o => o.Trim())
-            .ToArray();
+            .ToList();
 
-        policy.WithOrigins(origins)
+        // Add versions with/without trailing slashes
+        var variations = origins.Select(o => o.TrimEnd('/')).ToList();
+        variations.AddRange(variations.Select(v => v + "/").ToList());
+
+        policy.WithOrigins(variations.Distinct().ToArray())
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -192,6 +197,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseRouting();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

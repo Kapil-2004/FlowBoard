@@ -97,8 +97,15 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var origins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200").Split(',');
-        policy.WithOrigins(origins)
+        var origins = (builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(o => o.Trim())
+            .ToList();
+
+        var variations = origins.Select(o => o.TrimEnd('/')).ToList();
+        variations.AddRange(variations.Select(v => v + "/").ToList());
+
+        policy.WithOrigins(variations.Distinct().ToArray())
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();   // Required for SignalR WebSocket upgrade
@@ -147,6 +154,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
