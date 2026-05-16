@@ -16,21 +16,21 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address
-        value: http://auth-service:10000
+        value: https://auth-service-2izy.onrender.com
       - key: ReverseProxy__Clusters__workspace-cluster__Destinations__destination1__Address
-        value: http://workspace-service:10000
+        value: https://workspace-service-hnf7.onrender.com
       - key: ReverseProxy__Clusters__board-cluster__Destinations__destination1__Address
-        value: http://board-service:10000
+        value: https://board-service-9fpw.onrender.com
       - key: ReverseProxy__Clusters__list-cluster__Destinations__destination1__Address
-        value: http://list-service:10000
+        value: https://list-service-e5uu.onrender.com
       - key: ReverseProxy__Clusters__card-cluster__Destinations__destination1__Address
-        value: http://card-service:10000
+        value: https://card-service-svau.onrender.com
       - key: ReverseProxy__Clusters__comment-cluster__Destinations__destination1__Address
-        value: http://comment-service:10000
+        value: https://comment-service-4xaq.onrender.com
       - key: ReverseProxy__Clusters__label-cluster__Destinations__destination1__Address
-        value: http://label-service:10000
+        value: https://label-service-de13.onrender.com
       - key: ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address
-        value: http://notification-service:10000
+        value: https://notification-service-7mxn.onrender.com
       - key: Cors__AllowedOrigins
         value: https://flowboard-web.onrender.com
 
