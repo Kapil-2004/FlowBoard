@@ -22,11 +22,13 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Enable Swagger UI for all environments
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FlowBoard API Gateway v1");
+    c.RoutePrefix = "swagger"; // Access it at /swagger
+});
 
 app.UseRouting();
 app.UseAuthorization();
