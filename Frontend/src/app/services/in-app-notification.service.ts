@@ -8,8 +8,7 @@ import { AppNotification, CreateNotificationDto, SendBulkDto } from '../models/n
 })
 export class InAppNotificationService {
   private http = inject(HttpClient);
-  private isProd = !window.location.hostname.includes('localhost');
-  private base = this.isProd ? 'https://notification-service.onrender.com/api/notifications' : '/api/notifications';
+  private base = '/api/notifications';
 
   // ── Reactive state ─────────────────────────────────────────────
   readonly items     = signal<AppNotification[]>([]);

@@ -43,8 +43,7 @@ export interface ActivityReportDto {
   auditSummary: string;
 }
 
-const isProd = !window.location.hostname.includes('localhost');
-const ADMIN_BASE = isProd ? 'https://auth-service.onrender.com/api/admin' : '/api/admin';
+const ADMIN_BASE = '/api/admin';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {

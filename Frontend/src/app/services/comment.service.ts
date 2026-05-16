@@ -7,14 +7,14 @@ import { Comment, CreateCommentDto, UpdateCommentDto, Attachment } from '../mode
   providedIn: 'root'
 })
 export class CommentService {
-  private apiUrl = '/api/comments';
+  private commentApiUrl = '/api/comments';
   private attachmentApiUrl = '/api/comments/attachments';
 
   constructor(private http: HttpClient) {}
 
   // ── Comments ─────────────────────────────────────────────────────────────
   addComment(dto: CreateCommentDto): Observable<Comment> {
-    return this.http.post<Comment>(this.apiUrl, dto);
+    return this.http.post<Comment>(this.commentApiUrl, dto);
   }
 
   getByCard(cardId: number): Observable<Comment[]> {
