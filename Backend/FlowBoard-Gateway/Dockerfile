@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 10000
-ENV ASPNETCORE_URLS=http://+:10000
+ENV ASPNETCORE_URLS=http://0.0.0.0:10000
 # Fix for Segmentation Fault (status 139)
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
