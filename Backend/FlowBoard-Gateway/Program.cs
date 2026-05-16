@@ -19,8 +19,19 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .ConfigureHttpClient((context, handler) =>
     {
-        // Allow all certificates to prevent 502 errors on Render
+        // Allow all certificates for production/public URLs if needed
         handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+    })
+    .AddTransforms(builderContext =>
+    {
+        builderContext.AddRequestTransform(transformContext =>
+        {
+            // Set the Host header to match the destination's hostname
+            var destinationAddress = transformContext.Destination.Address;
+            var host = new Uri(destinationAddress).Host;
+            transformContext.ProxyRequest.Headers.Host = host;
+            return ValueTask.CompletedTask;
+        });
     });
 
 // Add Swagger
