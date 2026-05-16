@@ -24,16 +24,9 @@ builder.Services.AddReverseProxy()
     })
     .AddTransforms(transformContext =>
     {
-        // Automatically remove the API prefix based on the Route ID
-        var routeId = transformContext.Route.RouteId;
-        if (routeId.StartsWith("auth")) transformContext.AddPathRemovePrefix("/api/auth");
-        else if (routeId.StartsWith("workspace")) transformContext.AddPathRemovePrefix("/api/workspaces");
-        else if (routeId.StartsWith("board")) transformContext.AddPathRemovePrefix("/api/boards");
-        else if (routeId.StartsWith("list")) transformContext.AddPathRemovePrefix("/api/lists");
-        else if (routeId.StartsWith("card")) transformContext.AddPathRemovePrefix("/api/cards");
-        else if (routeId.StartsWith("comment")) transformContext.AddPathRemovePrefix("/api/comments");
-        else if (routeId.StartsWith("label")) transformContext.AddPathRemovePrefix("/api/labels");
-        else if (routeId.StartsWith("notification")) transformContext.AddPathRemovePrefix("/api/notifications");
+        // Always strip /api from the start of the path if it exists
+        // This ensures /api/auth/login becomes /auth/login for the backend
+        transformContext.AddPathRemovePrefix("/api");
     });
 
 // Add Swagger
