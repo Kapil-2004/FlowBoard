@@ -59,7 +59,7 @@ builder.Services.AddScoped<ICardService, CardServiceImpl>();
 
 // ── Authentication (JWT) ─────────────────────────────────────────────────────
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "FlowBoard-Super-Secret-Key-Must-Be-32-Chars!!";
-var key = Encoding.ASCII.GetBytes(jwtSecret);
+var key = Encoding.UTF8.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>
 {
