@@ -16,8 +16,8 @@ using Microsoft.OpenApi.Models;
 //  Port      : 5001 (local) | configured via ASPNETCORE_URLS in Docker
 // ═══════════════════════════════════════════════════════════════════════════
 
-var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(10000); });
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(int.Parse(port)); });
 
 // ── 1. Configuration ─────────────────────────────────────────────────────
 // Bind strongly-typed JwtSettings from appsettings.json → "Jwt" section
