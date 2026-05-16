@@ -227,4 +227,4 @@ services:
     plan: free
     envVars:
       - key: API_GATEWAY_URL
-        value: http://flowboard-gateway:10000
+        value: https://flowboard-gateway-9p8e.onrender.com
