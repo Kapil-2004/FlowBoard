@@ -12,6 +12,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpClient(); // Added for diagnostics
 
 // Add YARP
 builder.Services.AddReverseProxy()
@@ -78,6 +79,31 @@ app.UseSwaggerUI(c =>
 app.UseCors();
 app.UseRouting();
 
+// Diagnostic Test Endpoint
+app.MapGet("/test-backend/{service}", async (string service, IHttpClientFactory factory, IConfiguration config) =>
+{
+    var clusterKey = $"ReverseProxy:Clusters:{service}-cluster:Destinations:destination1:Address";
+    var url = config[clusterKey];
+    if (string.IsNullOrEmpty(url)) return Results.NotFound(new { Error = $"Service {service} not configured.", KeyChecked = clusterKey });
+    
+    try
+    {
+        var client = factory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(30); // Longer timeout for wake-up
+        var response = await client.GetAsync(url);
+        return Results.Ok(new { 
+            Service = service, 
+            TargetUrl = url, 
+            Status = (int)response.StatusCode, 
+            IsSuccess = response.IsSuccessStatusCode 
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to reach {url}: {ex.Message}");
+    }
+});
+
 // Diagnostic Status Page
 app.MapGet("/", (IConfiguration config) => 
 {
@@ -94,13 +120,19 @@ app.MapGet("/", (IConfiguration config) =>
                     </div>
                     <p style='color: #4b5563;'>Listening on Port: <strong>{port}</strong></p>
                     <hr style='border: 0; border-top: 1px solid #e5e7eb; margin: 24px 0;'/>
-                    <h3 style='color: #1f2937;'>Backend Clusters:</h3>
+                    <h3 style='color: #1f2937;'>Internal Backend Connectivity:</h3>
                     <ul style='list-style: none; padding: 0;'>
-                        <li style='padding: 8px 0;'>🔹 Auth: <code style='background: #f3f4f6; padding: 2px 6px; border-radius: 4px;'>{auth ?? "MISSING"}</code></li>
-                        <li style='padding: 8px 0;'>🔹 Workspace: <code style='background: #f3f4f6; padding: 2px 6px; border-radius: 4px;'>{workspace ?? "MISSING"}</code></li>
+                        <li style='padding: 12px; margin: 8px 0; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;'>
+                            <strong>Auth:</strong> <code>{auth ?? "MISSING"}</code>
+                            <br/><a href='/test-backend/auth' style='color: #2563eb; font-size: 0.8em; text-decoration: none;'>Run Connection Test →</a>
+                        </li>
+                        <li style='padding: 12px; margin: 8px 0; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;'>
+                            <strong>Workspace:</strong> <code>{workspace ?? "MISSING"}</code>
+                            <br/><a href='/test-backend/workspace' style='color: #2563eb; font-size: 0.8em; text-decoration: none;'>Run Connection Test →</a>
+                        </li>
                     </ul>
                     <p style='color: #6b7280; font-size: 0.85em; margin-top: 24px; line-height: 1.5;'>
-                        Tip: Use Internal Render Hostnames (e.g., http://auth-service:10000) for maximum reliability and speed.
+                        <strong>Note on 502 Errors:</strong> If you see a 502 in Swagger, it means the backend service is likely sleeping. Click 'Run Connection Test' above to wake it up.
                     </p>
                 </div>
             </body>
