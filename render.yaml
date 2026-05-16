@@ -32,7 +32,7 @@ services:
       - key: ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address
         value: https://notification-service-7mxn.onrender.com
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
 
   # --- Backend Services ---
   - type: web
@@ -44,7 +44,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -67,7 +67,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -90,7 +90,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -113,7 +113,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -136,7 +136,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -159,7 +159,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -182,7 +182,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
@@ -205,7 +205,7 @@ services:
       - key: ASPNETCORE_URLS
         value: http://0.0.0.0:10000
       - key: Cors__AllowedOrigins
-        value: https://flowboard-web.onrender.com
+        value: https://flowboard-web.onrender.com,https://flowboard-gateway-9p8e.onrender.com
       - key: ConnectionStrings__DefaultConnection
         fromDatabase:
           name: flowboard-db
