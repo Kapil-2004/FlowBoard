@@ -16,6 +16,7 @@ using Microsoft.OpenApi.Models;
 //  Port      : 5001 (local) | configured via ASPNETCORE_URLS in Docker
 // ═══════════════════════════════════════════════════════════════════════════
 
+var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(int.Parse(port)); });
 

@@ -9,6 +9,7 @@ using FlowBoard_ListService.Data;
 using FlowBoard_ListService.Repositories;
 using FlowBoard_ListService.Services;
 
+var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 builder.WebHost.ConfigureKestrel(serverOptions => { serverOptions.ListenAnyIP(int.Parse(port)); });
 
