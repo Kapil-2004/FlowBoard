@@ -37,34 +37,23 @@ if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("://"))
 {
     try 
     {
-        var schemeIndex = connectionString.IndexOf("://");
-        var uriPart = connectionString.Substring(schemeIndex + 3);
-        var atIndex = uriPart.LastIndexOf('@');
+        var uri = new Uri(connectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = userInfo[0];
+        var password = userInfo.Length > 1 ? userInfo[1] : "";
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
         
-        if (atIndex > 0)
-        {
-            var credentials = uriPart.Substring(0, atIndex);
-            var serverDb = uriPart.Substring(atIndex + 1);
-            var userPass = credentials.Split(':');
-            
-            if (userPass.Length >= 2)
-            {
-                var hostDb = serverDb.Split('/');
-                var hostPort = hostDb[0].Split(':');
-                var dbPart = hostDb.Length > 1 ? hostDb[1].Split('?')[0] : "";
-
-                if (!string.IsNullOrEmpty(dbPart))
-                {
-                    connectionString = $"Host={hostPort[0]};Port={(hostPort.Length > 1 ? hostPort[1] : "5432")};Database={dbPart};Username={userPass[0]};Password={userPass[1]};SSL Mode=Require;Trust Server Certificate=true";
-                }
-            }
-        }
+        connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+        Console.WriteLine($"[INFO] Successfully parsed Render connection string for host: {host}");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[WARNING] Using raw connection string. Parsing failed: {ex.Message}");
+        throw new InvalidOperationException($"Failed to parse database connection string: {ex.Message}", ex);
     }
 }
+
 
 // Append additional parameters (like SearchPath) from environment variables if provided
 var append = builder.Configuration["ConnectionStrings:DefaultConnectionAppend"] ?? ";SearchPath=auth";

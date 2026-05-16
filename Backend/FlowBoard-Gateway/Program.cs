@@ -17,6 +17,11 @@ builder.Services.AddHttpClient(); // Added for diagnostics
 // Add YARP
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .ConfigureHttpClient((context, handler) =>
+    {
+        // Allow all certificates to prevent 502 errors on Render
+        handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+    })
     .AddTransforms(transformContext =>
     {
         // Automatically remove the API prefix based on the Route ID
