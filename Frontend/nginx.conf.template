@@ -6,9 +6,9 @@ server {
     index index.html;
 
     # --- API Gateway Proxy ---
-    # Everything under /api is routed to the central Gateway
+    # Proxies all /api calls to the central Gateway
     location /api/ {
-        proxy_pass http://flowboard-gateway:10000/api/;
+        proxy_pass ${API_GATEWAY_URL}/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -18,7 +18,7 @@ server {
 
     # SignalR Hubs for real-time notifications
     location /hubs/ {
-        proxy_pass http://flowboard-gateway:10000/hubs/;
+        proxy_pass ${API_GATEWAY_URL}/hubs/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
