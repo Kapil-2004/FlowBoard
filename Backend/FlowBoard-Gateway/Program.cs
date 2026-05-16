@@ -21,12 +21,6 @@ builder.Services.AddReverseProxy()
     {
         // Allow all certificates to prevent 502 errors on Render
         handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
-    })
-    .AddTransforms(transformContext =>
-    {
-        // Always strip /api from the start of the path if it exists
-        // This ensures /api/auth/login becomes /auth/login for the backend
-        transformContext.AddPathRemovePrefix("/api");
     });
 
 // Add Swagger
