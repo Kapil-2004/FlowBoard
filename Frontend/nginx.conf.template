@@ -9,7 +9,7 @@ server {
     location /api/ {
         # Extract the hostname from API_GATEWAY_URL for SNI
         # We use a variable to bypass the startup DNS check
-        proxy_pass ${API_GATEWAY_URL}/api/;
+        proxy_pass ${API_GATEWAY_URL};
         
         proxy_http_version 1.1;
         proxy_ssl_server_name on;

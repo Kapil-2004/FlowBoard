@@ -1,4 +1,8 @@
 using Microsoft.OpenApi.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,8 +23,21 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .ConfigureHttpClient((context, handler) =>
     {
-        // Allow all certificates to prevent 502 errors on Render
         handler.SslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+    })
+    .AddTransforms(builderContext =>
+    {
+        builderContext.AddRequestTransform(transformContext =>
+        {
+            // Set the Host header to match the destination's hostname
+            // This prevents 403/404 errors from Render's load balancer
+            var destinationAddress = transformContext.Destination.Address;
+            if (Uri.TryCreate(destinationAddress, UriKind.Absolute, out var uri))
+            {
+                transformContext.ProxyRequest.Headers.Host = uri.Host;
+            }
+            return ValueTask.CompletedTask;
+        });
     });
 
 // Add Swagger
